@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data For Sale: The Invisible Trade</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['"Inter"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#059669', // Emerald 600
+              dark: '#064e3b',    // Emerald 900
+              light: '#D1FAE5',   // Emerald 100
+              accent: '#34D399',  // Emerald 400
+            },
+            stone: {
+              50: '#F9F8F4', // Keep the paper background
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px;
+      overflow-x: hidden;
+    }
+
+    body {
+      background-color: #F9F8F4;
+      color: #1a1a1a;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    @media print {
+
+      nav,
+      footer,
+      button {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@react-three/fiber": "https://aistudiocdn.com/@react-three/fiber@^9.4.0",
+    "@react-three/drei": "https://aistudiocdn.com/@react-three/drei@^10.7.7",
+    "three": "https://aistudiocdn.com/three@^0.181.1",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.553.0",
+    "@google/genai": "https://esm.run/@google/genai"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/research/paper/assets/index-BzPWGNQN.js"></script>
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
+</html>
