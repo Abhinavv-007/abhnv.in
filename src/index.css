@@ -1,0 +1,403 @@
+@import "tailwindcss";
+
+:root {
+  /* Pure Black Background to eliminate white tone */
+  --bg-color: #020202;
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+
+  /* REFINED GLASS VARIABLES - DARKER & CLEANER */
+  --card-bg: rgba(5, 5, 5, 0.6);
+  --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.00) 40%, transparent 100%);
+  --card-border: rgba(255, 255, 255, 0.05);
+  --card-inner-border: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  --blueprint-line: rgba(30, 30, 30, 0.4);
+
+  --accent-ai: #a855f7;
+  --accent-rural: #22c55e;
+  --accent-security: #ef4444;
+  --accent-edu: #3b82f6;
+  --accent-skills: #f59e0b;
+  --accent-neutral: rgba(255, 255, 255, 0.2);
+
+  --ruby-bright: #ff003c;
+}
+
+[data-theme='light'] {
+  --bg-color: #f2f2f2;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-inner-border: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+
+  --accent-neutral: rgba(0, 0, 0, 0.4);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Utility classes for Bento Layout */
+.bento-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(200px, auto);
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.span-2x2 {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.span-2w {
+  grid-column: span 2;
+}
+
+.span-full {
+  grid-column: 1 / -1;
+}
+
+.row-span-2 {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+@media (max-width: 1024px) {
+  .bento-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .span-full,
+  .span-2w {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-container {
+    grid-template-columns: 1fr;
+  }
+
+  .span-2x2,
+  .span-2w,
+  .span-full {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* Card Styles */
+.card {
+  background: var(--card-bg);
+  background-image: var(--card-gradient);
+  border: 2px solid var(--card-border);
+  box-shadow: var(--card-shadow), var(--card-inner-border);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--glow-color, rgba(255, 255, 255, 0.05)) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: screen;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.6), var(--card-inner-border);
+  z-index: 10;
+}
+
+/* Accents */
+.accent-ai {
+  --glow-color: var(--accent-ai);
+}
+
+.accent-rural {
+  --glow-color: var(--accent-rural);
+}
+
+.accent-security {
+  --glow-color: var(--accent-security);
+}
+
+.accent-edu {
+  --glow-color: var(--accent-edu);
+}
+
+.accent-skills {
+  --glow-color: var(--accent-skills);
+}
+
+.accent-neutral {
+  --glow-color: var(--accent-neutral);
+}
+
+/* IDLE STATE BORDERS - Low brightness accent, now matching the requested design */
+.accent-ai {
+  border-color: rgba(168, 85, 247, 0.25);
+}
+
+.accent-rural {
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.accent-security {
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.accent-edu {
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.accent-skills {
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.accent-neutral {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.accent-cyan {
+  border-color: rgba(6, 182, 212, 0.25);
+  --glow-color: #06b6d4;
+}
+
+.accent-magenta {
+  border-color: rgba(217, 70, 239, 0.25);
+  --glow-color: #d946ef;
+}
+
+.accent-ice {
+  border-color: rgba(200, 220, 255, 0.25);
+  --glow-color: #e0f2fe;
+}
+
+.accent-scroll {
+  border-color: rgba(251, 191, 36, 0.25);
+  --glow-color: #fbbf24;
+}
+
+/* Certification Grid Tiles */
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.cert-tile {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+  height: 100%;
+}
+
+.cert-tile:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* New Certification Card Style */
+.cert-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.cert-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--cert-glow, rgba(255, 255, 255, 0.1)) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cert-card:hover::before {
+  opacity: 1;
+}
+
+.cert-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 30px 5px var(--cert-glow, rgba(255, 255, 255, 0.15)),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Category Border Colors */
+.cert-ai {
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+/* Purple */
+.cert-security {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Red */
+.cert-defi {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* Green */
+.cert-crypto {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Blue */
+.cert-biz {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+/* Amber */
+
+.cert-tile:hover.cert-ai {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+
+.cert-tile:hover.cert-security {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.cert-tile:hover.cert-defi {
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+}
+
+.cert-tile:hover.cert-crypto {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
+
+.cert-tile:hover.cert-biz {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+/* Skill Tag */
+.skill-tag {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+  transition: background 0.2s, color 0.2s;
+}
+
+.skill-tag:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Button Connect */
+.btn-connect {
+  background: var(--text-main);
+  color: var(--bg-color);
+  font-weight: 800;
+  padding: 14px 36px;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-block;
+  box-shadow: 0 10px 20px -5px rgba(255, 255, 255, 0.05);
+}
+
+.btn-connect:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 0 30px var(--accent-ai);
+}
+
+/* Animations */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(34, 211, 238, 0.5);
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
