@@ -8,6 +8,8 @@ const MatrixRain = ({ theme, mode }) => {
         const ctx = canvas.getContext('2d');
         let width = window.innerWidth;
         let height = window.innerHeight;
+        const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        const isHidden = () => document.visibilityState === 'hidden';
         canvas.width = width;
         canvas.height = height;
 
@@ -26,6 +28,8 @@ const MatrixRain = ({ theme, mode }) => {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&*<>[]{}";
 
         const draw = () => {
+            if (prefersReducedMotion || isHidden()) return;
+
             // Fade effect - using pure black for dark mode to avoid grey buildup/haze
             // We use a very slight opacity to create trails, but keep it dark
             const fadeColor = theme === 'dark' ? "rgba(2, 2, 2, 0.1)" : "rgba(240, 242, 245, 0.15)";
@@ -67,20 +71,35 @@ const MatrixRain = ({ theme, mode }) => {
         };
         animate();
 
+        let resizeRaf = null;
         const handleResize = () => {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-            // Refill on resize to avoid white patches
-            ctx.fillStyle = theme === 'dark' ? '#020202' : '#f0f2f5';
-            ctx.fillRect(0, 0, width, height);
+            if (resizeRaf) cancelAnimationFrame(resizeRaf);
+            resizeRaf = requestAnimationFrame(() => {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                // Refill on resize to avoid white patches
+                ctx.fillStyle = theme === 'dark' ? '#020202' : '#f0f2f5';
+                ctx.fillRect(0, 0, width, height);
+            });
         };
 
+        const onVisibilityChange = () => {
+            if (!isHidden()) {
+                // Ensure the canvas is refreshed when returning to the tab
+                ctx.fillStyle = theme === 'dark' ? '#020202' : '#f0f2f5';
+                ctx.fillRect(0, 0, width, height);
+            }
+        };
+
+        document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('resize', handleResize);
         return () => {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
             window.removeEventListener('resize', handleResize);
             cancelAnimationFrame(animationId);
+            if (resizeRaf) cancelAnimationFrame(resizeRaf);
         };
     }, [theme]);
 

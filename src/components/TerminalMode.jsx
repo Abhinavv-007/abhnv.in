@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { SOCIALS, SKILLS, CERTS } from '../data/constants';
+import { SOCIALS, SKILLS, CERTS, PROJECTS, NAV_LINKS } from '../data/constants';
 
 const TerminalMode = ({ setMode }) => {
     const [history, setHistory] = useState([
@@ -8,6 +8,8 @@ const TerminalMode = ({ setMode }) => {
         { type: 'output', content: "Type 'help' to see available commands." }
     ]);
     const [input, setInput] = useState('');
+    const [commandHistory, setCommandHistory] = useState([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
     const inputRef = useRef(null);
     const bottomRef = useRef(null);
 
@@ -16,9 +18,16 @@ const TerminalMode = ({ setMode }) => {
         inputRef.current?.focus();
     }, [history]);
 
+    const baseCommands = ['help', 'about', 'skills', 'certs', 'projects', 'socials', 'clear', 'exit', 'contact', 'theme', 'modern'];
+    const projectCommands = PROJECTS.map(p => `open ${p.id}`);
+    const commandSuggestions = [...baseCommands, ...projectCommands];
+
     const handleCommand = (cmd) => {
         const cleanCmd = cmd.trim().toLowerCase();
+        if (!cleanCmd) return;
         let response = null;
+
+        const projectMatch = PROJECTS.find(p => cleanCmd === `open ${p.id}` || cleanCmd === p.id);
 
         switch (cleanCmd) {
             case 'help':
@@ -27,8 +36,10 @@ const TerminalMode = ({ setMode }) => {
                         <span className="text-cyan-400">about</span><span>Who Am I</span>
                         <span className="text-cyan-400">skills</span><span>Tech Stack</span>
                         <span className="text-cyan-400">certs</span><span>Certifications</span>
-                        <span className="text-cyan-400">projects</span><span>View Work</span>
+                        <span className="text-cyan-400">projects</span><span>View Work / open {'<slug>'}</span>
                         <span className="text-cyan-400">socials</span><span>Connect</span>
+                        <span className="text-cyan-400">contact</span><span>Say hello</span>
+                        <span className="text-cyan-400">modern</span><span>Return to UI grid</span>
                         <span className="text-cyan-400">clear</span><span>Clear Screen</span>
                         <span className="text-cyan-400">exit</span><span>Return to UI</span>
                     </div>
@@ -63,14 +74,29 @@ const TerminalMode = ({ setMode }) => {
             case 'projects':
                 response = (
                     <div className="grid gap-2">
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">MindMate</span><span className="text-xs opacity-70">AI for emotional clarity</span></div>
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">GramGPT</span><span className="text-xs opacity-70">Rural India AI access</span></div>
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">ScamShield</span><span className="text-xs opacity-70">Gamified fraud defense</span></div>
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">IELTS Ace</span><span className="text-xs opacity-70">AI IELTS preparation tool</span></div>
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">UniWiz</span><span className="text-xs opacity-70">Global admissions navigator</span></div>
-                        <div className="flex flex-col"><span className="text-green-400 font-bold">Dashey</span><span className="text-xs opacity-70">Smart workflow dashboard</span></div>
+                        {PROJECTS.map(project => (
+                            <div key={project.id} className="flex flex-col">
+                                <span className="text-green-400 font-bold">{project.title}</span>
+                                <span className="text-xs opacity-70">{project.subtitle}</span>
+                                <span className="text-[10px] opacity-60">open {project.id}</span>
+                            </div>
+                        ))}
                     </div>
                 );
+                break;
+            case 'contact':
+                response = (
+                    <div className="flex flex-col gap-1">
+                        <a href={NAV_LINKS.contact} target="_blank" className="hover:underline text-blue-400">Contact form</a>
+                        <a href={SOCIALS.email} className="hover:underline text-blue-400">Email</a>
+                    </div>
+                );
+                break;
+            case 'modern':
+                setMode('modern');
+                return;
+            case 'theme':
+                response = 'Use the sun/moon toggle in Modern mode to switch themes.';
                 break;
             case 'socials':
                 response = (
@@ -89,20 +115,58 @@ const TerminalMode = ({ setMode }) => {
                 setMode('landing');
                 return;
             default:
+                if (projectMatch) {
+                    window.open(projectMatch.href, '_blank', 'noopener,noreferrer');
+                    response = (
+                        <div>
+                            <div className="text-green-400">Launching {projectMatch.title}...</div>
+                            <div className="text-xs opacity-70">{projectMatch.href}</div>
+                        </div>
+                    );
+                    break;
+                }
                 response = `Command not found: ${cleanCmd}. Type 'help' for options.`;
         }
 
         setHistory(prev => [
             ...prev,
-            { type: 'input', content: cmd },
+            { type: 'input', content: cleanCmd },
             { type: 'output', content: response }
         ]);
+
+        if (cleanCmd) {
+            setCommandHistory(prev => [...prev, cleanCmd]);
+            setHistoryIndex(-1);
+        }
     };
 
     const onKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleCommand(input);
             setInput('');
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHistoryIndex(prev => {
+                const nextIndex = Math.min(prev + 1, commandHistory.length - 1);
+                const command = commandHistory[commandHistory.length - 1 - nextIndex];
+                if (command) setInput(command);
+                return nextIndex;
+            });
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHistoryIndex(prev => {
+                const nextIndex = Math.max(prev - 1, -1);
+                const command = nextIndex === -1 ? '' : commandHistory[commandHistory.length - 1 - nextIndex];
+                setInput(command ?? '');
+                return nextIndex;
+            });
+        }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const match = commandSuggestions.find(cmd => cmd.startsWith(input));
+            if (match) setInput(match);
         }
     };
 
@@ -156,7 +220,7 @@ const TerminalMode = ({ setMode }) => {
                         ref={inputRef}
                         type="text"
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
+                        onChange={(e) => setInput(e.target.value.toLowerCase())}
                         onKeyDown={onKeyDown}
                         className="bg-transparent outline-none flex-1 text-green-400 caret-green-500"
                         autoFocus

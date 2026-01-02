@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Sun, Moon, Github, BookOpen } from 'lucide-react';
 import BentoCard from './BentoCard';
-import { SOCIALS, NAV_LINKS } from '../data/constants';
+import { SOCIALS, NAV_LINKS, PROJECTS, CERTIFICATIONS } from '../data/constants';
 
 // Updated LinkedIn icon (2024 rounded style)
 const LinkedInIcon = () => (
@@ -11,23 +11,6 @@ const LinkedInIcon = () => (
 );
 
 const ModernMode = ({ setMode, toggleTheme, theme }) => {
-    const CERTS_LIST = [
-        { name: "CS50x", provider: "Harvard University", link: "https://cs50.harvard.edu/certificates/62867486-5c48-4ef8-8c93-c01c59f27dca", category: "ai" },
-        { name: "CS50AI", provider: "Harvard University", link: "https://cs50.harvard.edu/certificates/b2a3a725-fafe-4a0e-bb10-7e7f55433bc7", category: "ai" },
-        { name: "Google Cybersecurity", provider: "Google", link: "https://coursera.org/verify/professional-cert/AOHLGIZVO0HM", category: "security" },
-        { name: "IBM Generative AI Fundamentals", provider: "IBM", link: "https://coursera.org/verify/specialization/5Z7BSFCR8TZ3", category: "ai" },
-        { name: "DeFi Specialization", provider: "Wharton", link: "https://coursera.org/verify/specialization/QCJKZ0828MR9", category: "defi" },
-        { name: "Cryptography I", provider: "Stanford University", link: "https://coursera.org/verify/68X34EAOUTGZ", category: "crypto" },
-        { name: "Financial Markets", provider: "Yale", link: "https://coursera.org/verify/16N19GG1SQRJ", category: "biz" },
-        { name: "Elements of AI", provider: "Helsinki", link: "https://certificates.mooc.fi/validate/v3u4c9jcesr", category: "ai" },
-        { name: "Ethical AI", provider: "Responsible AI", link: "https://certificates.mooc.fi/validate/lassvl2cm4", category: "ai" },
-        { name: "IoT Systems", provider: "Internet of Things", link: "https://courses.mooc.fi/certificates/validate/vqgbszbeu79jare", category: "crypto" },
-        { name: "IBM AI Foundations for Everyone", provider: "IBM", link: "https://coursera.org/verify/specialization/HLLF7L2BHM8E", category: "ai" },
-        { name: "CS50P", provider: "Harvard University", link: "https://cs50.harvard.edu/certificates/f45543c6-4430-4399-b015-e4f0a19118dc", category: "ai" },
-        { name: "Applied Cryptography", provider: "Stanford University", link: "https://coursera.org/verify/HYQB0ZG2VEAC", category: "crypto" },
-        { name: "Wharton Entrepreneurship", provider: "Wharton Online", link: "https://coursera.org/verify/specialization/9ZVCVEY4IL0A", category: "biz" }
-    ];
-
     // Category color mapping - accent borders with hover glow
     const getCategoryColor = (category) => {
         switch (category) {
@@ -144,104 +127,21 @@ const ModernMode = ({ setMode, toggleTheme, theme }) => {
                 {/* PROJECTS GRID (3x2) */}
                 {/* ============================================ */}
 
-                {/* 1. MindMate */}
-                <BentoCard href="https://mindmate.abhnv.me" className="p-6 accent-ai">
-                    <div className="mono text-[10px] text-purple-500 font-bold mb-2">01 // AI_AGENT</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>MindMate</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>AI for emotional clarity</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-purple-500"></div> Mood analytics
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-purple-500"></div> Private journal Intel
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-purple-400">LAUNCH →</div>
-                </BentoCard>
-
-                {/* 2. GramGPT */}
-                <BentoCard href="https://gramgpt.abhnv.me" className="p-6 accent-rural">
-                    <div className="mono text-[10px] text-green-500 font-bold mb-2">02 // AGRI_TECH</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>GramGPT</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Rural India AI access</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-green-500"></div> Multilingual voice
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-green-500"></div> Agri assistance
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-green-400">LAUNCH →</div>
-                </BentoCard>
-
-                {/* 3. ScamShield */}
-                <BentoCard href="https://scamshield.abhnv.me" className="p-6 accent-security">
-                    <div className="mono text-[10px] text-red-500 font-bold mb-2">03 // CYBER_SEC</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>ScamShield</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Gamified fraud defense</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-red-500"></div> Phishing scenarios
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-red-500"></div> Stay protected
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-red-400">LAUNCH →</div>
-                </BentoCard>
-
-                {/* 4. IELTS Ace */}
-                <BentoCard href="https://www.abhnv.in/ielts-ace" className="p-6 accent-ai">
-                    <div className="mono text-[10px] text-purple-500 font-bold mb-2">04 // ED_TECH</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>IELTS Ace</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>AI preparation tool</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-purple-500"></div> Speaking & writing eval
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-purple-500"></div> Smart learning paths
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-purple-400">LAUNCH →</div>
-                </BentoCard>
-
-                {/* 5. UniWiz */}
-                <BentoCard href="https://uniwiz.abhnv.me" className="p-6 accent-edu">
-                    <div className="mono text-[10px] text-blue-500 font-bold mb-2">05 // ED_TECH</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>UniWiz</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Global admissions</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-blue-500"></div> University insights
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-blue-500"></div> Scholarship guidance
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-blue-400">LAUNCH →</div>
-                </BentoCard>
-
-                {/* 6. Dashey */}
-                <BentoCard href="https://abhnv.in/dashey" className="p-6 accent-cyan">
-                    <div className="mono text-[10px] text-cyan-400 font-bold mb-2">06 // PRODUCTIVITY</div>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>Dashey</h3>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Smart Workflow Dashboard</p>
-                    <ul className="mt-4 space-y-2">
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-cyan-400"></div> Task automation
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-cyan-400"></div> Team workspace with analytics
-                        </li>
-                        <li className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                            <div className="w-1 h-1 bg-cyan-400"></div> Designed for productivity
-                        </li>
-                    </ul>
-                    <div className="mt-4 text-xs font-bold text-cyan-400">LAUNCH →</div>
-                </BentoCard>
+                {PROJECTS.map(project => (
+                    <BentoCard key={project.id} href={project.href} className={`p-6 ${project.accentClass}`}>
+                        <div className={`mono text-[10px] ${project.colorClass} font-bold mb-2`}>{project.badge}</div>
+                        <h3 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>{project.title}</h3>
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{project.subtitle}</p>
+                        <ul className="mt-4 space-y-2">
+                            {project.bullets.map((bullet, idx) => (
+                                <li key={idx} className="text-[11px] flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                                    <div className={`w-1 h-1 ${project.colorClass}`}></div> {bullet}
+                                </li>
+                            ))}
+                        </ul>
+                        <div className={`mt-4 text-xs font-bold ${project.ctaClass}`}>LAUNCH →</div>
+                    </BentoCard>
+                ))}
 
                 {/* ============================================ */}
                 {/* AR PROJECTS SECTION */}
@@ -346,11 +246,11 @@ const ModernMode = ({ setMode, toggleTheme, theme }) => {
                     <p className="mono text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Validated learning. Proven execution.</p>
 
                     <div className="space-y-4">
-                        {CERTS_LIST.map((cert, i) => {
+                        {CERTIFICATIONS.map((cert) => {
                             const colors = getCategoryColor(cert.category);
                             return (
                                 <a
-                                    key={i}
+                                    key={cert.name}
                                     href={cert.link}
                                     target="_blank"
                                     rel="noreferrer"

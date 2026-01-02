@@ -7,21 +7,25 @@ import TerminalMode from './components/TerminalMode';
 
 function App() {
   const [mode, setMode] = useState('landing');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    const stored = localStorage.getItem('abhnv-theme');
+    if (stored === 'dark' || stored === 'light') return stored;
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    setTheme(prev => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('abhnv-theme', next);
+      return next;
+    });
   };
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('abhnv-theme', theme);
   }, [theme]);
-
-  // Adjust opacity to be subtle but visible
-  const getMatrixOpacity = () => {
-    if (mode === 'landing') return 0.3;
-    return 0.15;
-  };
 
   return (
     <>
