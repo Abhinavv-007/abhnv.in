@@ -31,7 +31,7 @@ const THEME_COLORS = {
 
 const EnergySparks = ({ activeTheme }: { activeTheme: keyof typeof THEME_COLORS }) => {
   const ref = useRef<THREE.Points>(null);
-  const count = 2000;
+  const count = 4000;
 
   // Initialize positions
   const positions = useMemo(() => {
@@ -71,7 +71,7 @@ const EnergySparks = ({ activeTheme }: { activeTheme: keyof typeof THEME_COLORS 
       <PointMaterial
         transparent
         color={THEME_COLORS.amber}
-        size={0.06}
+        size={0.045}
         sizeAttenuation={true}
         depthWrite={false}
         opacity={0.8}
@@ -81,46 +81,7 @@ const EnergySparks = ({ activeTheme }: { activeTheme: keyof typeof THEME_COLORS 
   );
 };
 
-const FloatingOrbs = ({ activeTheme, darkMode }: { activeTheme: keyof typeof THEME_COLORS, darkMode: boolean }) => {
-  const count = 20; // Increased count
-  const orbs = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < count; i++) {
-      // Create scattered orb positions
-      const x = (Math.random() - 0.5) * 30; // Wider spread
-      const y = (Math.random() - 0.5) * 20;
-      const z = (Math.random() - 0.5) * 10 - 2;
 
-      // Varied usage: Mostly small, some medium-large
-      const isLarge = Math.random() > 0.8;
-      const scale = isLarge
-        ? Math.random() * 0.4 + 0.2 // Big ones (0.2 - 0.6)
-        : Math.random() * 0.15 + 0.05; // Small ones
-
-      temp.push({ position: [x, y, z] as [number, number, number], scale });
-    }
-    return temp;
-  }, []);
-
-  const color = THEME_COLORS[activeTheme];
-
-  return (
-    <Group>
-      {orbs.map((orb, i) => (
-        <Float key={i} speed={2 + Math.random() * 2} rotationIntensity={0.2} floatIntensity={1}>
-          <mesh position={orb.position} scale={orb.scale}>
-            <sphereGeometry args={[1, 16, 16]} />
-            <meshBasicMaterial
-              color={color}
-              transparent
-              opacity={darkMode ? 0.15 : 0.3} // More visible in light mode
-            />
-          </mesh>
-        </Float>
-      ))}
-    </Group>
-  )
-}
 
 export const GlobalBackground: React.FC<SceneProps> = ({ activeTheme, darkMode }) => {
   return (
@@ -129,7 +90,6 @@ export const GlobalBackground: React.FC<SceneProps> = ({ activeTheme, darkMode }
         <Fog attach="fog" args={[darkMode ? '#0c0a09' : '#e7e5e4', 5, 30]} />
         <AmbientLight intensity={darkMode ? 0.2 : 0.5} />
         <EnergySparks activeTheme={activeTheme} />
-        <FloatingOrbs activeTheme={activeTheme} darkMode={darkMode} />
         <Environment preset="city" />
       </Canvas>
       <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-stone-950 via-transparent to-stone-950/50' : 'from-stone-200 via-transparent to-stone-200/50'}`} />
