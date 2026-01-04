@@ -212,29 +212,82 @@ const ModernMode = ({ setMode, toggleTheme, theme }) => {
                             </p>
                         </div>
 
-                        {/* Right: Data for Sale Mini Block - Blue Accent with Glow */}
-                        <a
-                            href="https://www.abhnv.in/research/paper"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="cert-card group min-w-[200px]"
-                            style={{
-                                border: '2px solid rgba(59, 130, 246, 0.35)',
-                                '--cert-glow': 'rgba(59, 130, 246, 0.3)',
-                            }}
-                            onMouseMove={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
-                                e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
-                            }}
-                        >
-                            <div className="text-xs mono text-blue-400 relative z-10">PAPER 01</div>
-                            <h3 className="text-lg font-bold mt-1 relative z-10" style={{ color: 'var(--text-main)' }}>Data for Sale</h3>
-                            <p className="text-[10px] mt-1 relative z-10" style={{ color: 'var(--text-muted)' }}>Privacy in the digital economy</p>
-                            <div className="mt-3 text-[10px] uppercase tracking-widest inline-flex items-center gap-1 transition-all text-blue-400 relative z-10">
-                                Read <span className="group-hover:translate-x-1 transition-transform">→</span>
-                            </div>
-                        </a>
+                        {/* Right: Papers List */}
+                        <div className="flex flex-col gap-4 min-w-[200px]">
+
+                            {/* Paper 01 - GREEN */}
+                            <a
+                                href="https://www.abhnv.in/research/paper"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="cert-card group"
+                                style={{
+                                    border: '2px solid rgba(34, 197, 94, 0.35)', // Green
+                                    '--cert-glow': 'rgba(34, 197, 94, 0.3)',
+                                }}
+                                onMouseMove={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                                    e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+                                }}
+                            >
+                                <div className="text-xs mono text-green-400 relative z-10">PAPER 01</div>
+                                <h3 className="text-lg font-bold mt-1 relative z-10" style={{ color: 'var(--text-main)' }}>Data for Sale</h3>
+                                <p className="text-[10px] mt-1 relative z-10" style={{ color: 'var(--text-muted)' }}>Privacy in the digital economy</p>
+                                <div className="mt-3 text-[10px] uppercase tracking-widest inline-flex items-center gap-1 transition-all text-green-400 relative z-10">
+                                    Read <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                </div>
+                            </a>
+
+                            {/* Paper 02 - YELLOW */}
+                            <a
+                                href="https://www.abhnv.in/research/paper2"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="cert-card group"
+                                style={{
+                                    border: '2px solid rgba(234, 179, 8, 0.35)', // Yellow
+                                    '--cert-glow': 'rgba(234, 179, 8, 0.3)',
+                                }}
+                                onMouseMove={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                                    e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+                                }}
+                            >
+                                <div className="text-xs mono text-yellow-400 relative z-10">PAPER 02</div>
+                                <h3 className="text-lg font-bold mt-1 relative z-10" style={{ color: 'var(--text-main)' }}>The Hidden Watts</h3>
+                                <p className="text-[10px] mt-1 relative z-10" style={{ color: 'var(--text-muted)' }}>Energy cost of attention</p>
+                                <div className="mt-3 text-[10px] uppercase tracking-widest inline-flex items-center gap-1 transition-all text-yellow-400 relative z-10">
+                                    Read <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                </div>
+                            </a>
+
+                            {/* Paper 03 - BLUE */}
+                            <a
+                                href="https://www.abhnv.in/research/paper3"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="cert-card group"
+                                style={{
+                                    border: '2px solid rgba(59, 130, 246, 0.35)', // Blue
+                                    '--cert-glow': 'rgba(59, 130, 246, 0.3)',
+                                }}
+                                onMouseMove={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    e.currentTarget.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                                    e.currentTarget.style.setProperty('--y', `${e.clientY - rect.top}px`);
+                                }}
+                            >
+                                <div className="text-xs mono text-blue-400 relative z-10">PAPER 03</div>
+                                <h3 className="text-lg font-bold mt-1 relative z-10" style={{ color: 'var(--text-main)' }}>GLASS BALLOT BOX</h3>
+                                <p className="text-[10px] mt-1 relative z-10" style={{ color: 'var(--text-muted)' }}>Verifiable Voting via Blockchain</p>
+                                <div className="mt-3 text-[10px] uppercase tracking-widest inline-flex items-center gap-1 transition-all text-blue-400 relative z-10">
+                                    Read <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                </div>
+                            </a>
+
+                        </div>
                     </div>
                 </BentoCard>
 

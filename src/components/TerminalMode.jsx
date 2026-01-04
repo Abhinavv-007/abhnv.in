@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { SOCIALS, SKILLS, CERTS, PROJECTS, NAV_LINKS } from '../data/constants';
+import { SOCIALS, SKILLS, CERTS, PROJECTS, NAV_LINKS, PAPERS } from '../data/constants';
 
 const TerminalMode = ({ setMode }) => {
     const [history, setHistory] = useState([
@@ -18,9 +18,10 @@ const TerminalMode = ({ setMode }) => {
         inputRef.current?.focus();
     }, [history]);
 
-    const baseCommands = ['help', 'about', 'skills', 'certs', 'projects', 'socials', 'clear', 'exit', 'contact', 'theme', 'modern'];
+    const baseCommands = ['help', 'about', 'skills', 'certs', 'projects', 'papers', 'socials', 'clear', 'exit', 'contact', 'theme', 'modern'];
     const projectCommands = PROJECTS.map(p => `open ${p.id}`);
-    const commandSuggestions = [...baseCommands, ...projectCommands];
+    const paperCommands = PAPERS.map(p => `read ${p.id}`);
+    const commandSuggestions = [...baseCommands, ...projectCommands, ...paperCommands];
 
     const handleCommand = (cmd) => {
         const cleanCmd = cmd.trim().toLowerCase();
@@ -28,6 +29,7 @@ const TerminalMode = ({ setMode }) => {
         let response = null;
 
         const projectMatch = PROJECTS.find(p => cleanCmd === `open ${p.id}` || cleanCmd === p.id);
+        const paperMatch = PAPERS.find(p => cleanCmd.includes(p.id) || cleanCmd.includes(p.title.toLowerCase()) || (cleanCmd.includes('paper') && cleanCmd.includes(p.id.replace('paper', ''))));
 
         switch (cleanCmd) {
             case 'help':
@@ -36,7 +38,8 @@ const TerminalMode = ({ setMode }) => {
                         <span className="text-cyan-400">about</span><span>Who Am I</span>
                         <span className="text-cyan-400">skills</span><span>Tech Stack</span>
                         <span className="text-cyan-400">certs</span><span>Certifications</span>
-                        <span className="text-cyan-400">projects</span><span>View Work / open {'<slug>'}</span>
+                        <span className="text-cyan-400">projects</span><span>View Projects</span>
+                        <span className="text-cyan-400">papers</span><span>Read Research</span>
                         <span className="text-cyan-400">socials</span><span>Connect</span>
                         <span className="text-cyan-400">contact</span><span>Say hello</span>
                         <span className="text-cyan-400">modern</span><span>Return to UI grid</span>
@@ -84,6 +87,19 @@ const TerminalMode = ({ setMode }) => {
                     </div>
                 );
                 break;
+            case 'papers':
+                response = (
+                    <div className="grid gap-2">
+                        {PAPERS.map(paper => (
+                            <div key={paper.id} className="flex flex-col">
+                                <span className={`${paper.color} font-bold`}>{paper.title}</span>
+                                <span className="text-xs opacity-70">{paper.subtitle}</span>
+                                <span className="text-[10px] opacity-60">read {paper.id}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+                break;
             case 'contact':
                 response = (
                     <div className="flex flex-col gap-1">
@@ -124,6 +140,28 @@ const TerminalMode = ({ setMode }) => {
                         </div>
                     );
                     break;
+                }
+
+                // Natural language match for papers (e.g. "read paper 2", "paper 3 link", "glass ballot box")
+                if (paperMatch || cleanCmd.includes('paper')) {
+                    const targetPaper = paperMatch || PAPERS[0]; // Default to paper 1 if generic "paper" is typed but no specific match
+
+                    // If specific match found or command was just "paper" (lists them)
+                    if (!paperMatch && cleanCmd === 'paper') {
+                        // Delegate to 'papers' logic
+                        return handleCommand('papers');
+                    }
+
+                    if (targetPaper) {
+                        window.open(targetPaper.href, '_blank', 'noopener,noreferrer');
+                        response = (
+                            <div>
+                                <div className={targetPaper.color}>Opening {targetPaper.title}...</div>
+                                <div className="text-xs opacity-70">{targetPaper.href}</div>
+                            </div>
+                        );
+                        break;
+                    }
                 }
                 response = `Command not found: ${cleanCmd}. Type 'help' for options.`;
         }

@@ -144,3 +144,27 @@ export const PROJECTS = [
         bullets: ['Task automation', 'Team workspace with analytics', 'Designed for productivity'],
     },
 ];
+
+export const PAPERS = [
+    {
+        id: 'paper1',
+        title: 'Data for Sale',
+        subtitle: 'Privacy in the digital economy',
+        href: 'https://www.abhnv.in/research/paper',
+        color: 'text-green-400'
+    },
+    {
+        id: 'paper2',
+        title: 'The Hidden Watts of Attention',
+        subtitle: 'Energy cost of attention',
+        href: 'https://www.abhnv.in/research/paper2',
+        color: 'text-yellow-400'
+    },
+    {
+        id: 'paper3',
+        title: 'The Glass Ballot Box',
+        subtitle: 'Verifiable Voting via Blockchain',
+        href: 'https://www.abhnv.in/research/paper3',
+        color: 'text-blue-400'
+    }
+];
