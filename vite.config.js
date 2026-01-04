@@ -13,6 +13,7 @@ export default defineConfig({
         airblocks: resolve(__dirname, 'Air-Blocks/index.html'),
         dashey: resolve(__dirname, 'dashey/index.html'),
         aether: resolve(__dirname, 'Aether/index.html'),
+        paper3: resolve(__dirname, 'research/paper3/index.html'),
       },
     },
   },
