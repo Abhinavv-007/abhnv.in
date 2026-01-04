@@ -50,7 +50,7 @@ const TerminalMode = ({ setMode }) => {
                     <div className="space-y-2">
                         <p className="font-bold text-white">ABHINAV RAJ</p>
                         <p>Technologist focused on AI, Blockchain, and Cybersecurity.</p>
-                        <p>Philosophy: Curiosity > Comfort.</p>
+                        <p>Philosophy: Curiosity &gt; Comfort.</p>
                     </div>
                 );
                 break;
