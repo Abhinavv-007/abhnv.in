@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Glass Ballot Box: Verifiable Voting Artifact</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        paper: {
+                            dark: '#050505',
+                            card: '#0A0A0A',
+                            text: '#E5E5E5',
+                            muted: '#9CA3AF',
+                            border: '#262626',
+                        },
+                        brand: {
+                            blue: '#2563EB',
+                            glow: '#60A5FA',
+                            accent: '#1D4ED8',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 1s ease-out forwards',
+                        'fade-in-up': 'fadeInUp 1s ease-out forwards',
+                        'slideRight': 'slideRight 3s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideRight: {
+                            '0%': { left: '0', opacity: '0' },
+                            '20%': { opacity: '1' },
+                            '80%': { opacity: '1' },
+                            '100%': { left: '100%', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #050505;
+            color: #E5E5E5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404040;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen font-sans selection:bg-brand-blue selection:text-white overflow-x-hidden">
+
+    <!-- Three.js Canvas for 3D Particles -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Main Content -->
+    <div class="relative z-10 font-light">
+
+        <!-- NAVBAR -->
+        <nav
+            class="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/90 to-transparent backdrop-blur-sm h-24 flex items-center transition-all duration-300">
+            <div class="container mx-auto px-6 flex justify-between items-center">
+                <div class="flex items-center gap-4 group cursor-pointer">
+                    <div
+                        class="w-10 h-10 bg-brand-blue/10 border border-brand-blue/30 text-brand-blue flex items-center justify-center font-serif font-bold rounded-lg group-hover:bg-brand-blue group-hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.2)]">
+                        G</div>
+                    <span
+                        class="font-serif font-bold tracking-wider text-xl text-white group-hover:text-brand-glow transition-colors">GLASS
+                        BALLOT BOX</span>
+                </div>
+                <div class="hidden md:flex gap-10 text-base font-bold tracking-[0.15em] text-paper-muted uppercase">
+                    <a href="#intro"
+                        class="hover:text-white hover:scale-105 transition-all py-2 border-b-2 border-transparent hover:border-brand-blue">The
+                        Problem</a>
+                    <a href="#demo"
+                        class="hover:text-white hover:scale-105 transition-all py-2 border-b-2 border-transparent hover:border-brand-blue">Simulation</a>
+                    <a href="#audit"
+                        class="hover:text-white hover:scale-105 transition-all py-2 border-b-2 border-transparent hover:border-brand-blue">Audit</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- HERO SECTION -->
+        <section class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-20">
+            <!-- Background Orbs -->
+            <div
+                class="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-brand-blue/5 rounded-full blur-[100px] animate-pulse-slow">
+            </div>
+            <div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[100px] animate-pulse-slow"
+                style="animation-delay: 2s;"></div>
+
+            <div class="relative z-10 container mx-auto px-6 text-center max-w-5xl mt-12 animate-fade-in-up">
+                <!-- Date Badge -->
+                <div
+                    class="inline-block px-8 py-3 border border-brand-blue/20 bg-brand-blue/5 rounded-full text-lg font-mono tracking-[0.25em] mb-10 text-brand-glow uppercase backdrop-blur-md shadow-[0_0_20px_rgba(37,99,235,0.1)]">
+                    January 2026
+                </div>
+
+                <!-- Huge Serif Title -->
+                <h1
+                    class="text-7xl md:text-9xl font-serif font-bold mb-8 tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-gray-400 leading-[0.9] drop-shadow-2xl">
+                    THE GLASS<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-gray-500 to-gray-800">BALLOT
+                        BOX</span>
+                </h1>
+
+                <!-- Blue Serif Tagline -->
+                <p
+                    class="text-3xl md:text-4xl font-serif italic text-brand-glow mb-12 max-w-4xl mx-auto leading-relaxed drop-shadow-[0_0_25px_rgba(37,99,235,0.4)]">
+                    Transparency where it matters.<br>Privacy where it counts.
+                </p>
+
+                <p
+                    class="text-sm md:text-base font-mono text-paper-muted/80 mb-16 max-w-lg mx-auto leading-loose border-l border-brand-blue/30 pl-6 text-left">
+                    If democracy runs on trust, what happens when trust runs out?
+                    An election is not just counting. It's evidence.
+                </p>
+
+                <div class="flex justify-center gap-8 flex-wrap">
+                    <a href="#intro"
+                        class="group relative px-10 py-4 bg-brand-blue text-white rounded-full font-bold tracking-wider shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:bg-brand-accent hover:scale-105 hover:shadow-[0_0_50px_rgba(37,99,235,0.6)] transition-all overflow-hidden">
+                        <span class="relative z-10">Start Reading</span>
+                        <div
+                            class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        </div>
+                    </a>
+                    <a href="#demo"
+                        class="px-10 py-4 border border-white/10 bg-white/5 backdrop-blur text-paper-muted rounded-full font-bold tracking-wider hover:text-white hover:border-white/50 hover:bg-white/10 transition-all">
+                        Launch Demo
+                    </a>
+                </div>
+            </div>
+
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-paper-muted/30">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M12 5v14M19 12l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- CHAPTER 1: THE PROBLEM -->
+        <section id="intro"
+            class="py-40 border-t border-white/5 relative bg-gradient-to-b from-black/0 via-black/40 to-black/60 backdrop-blur-[2px]">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="flex gap-6 items-start mb-12">
+                    <h2 class="text-5xl md:text-6xl font-serif text-white leading-tight">The Black Box<br><span
+                            class="text-paper-muted italic">Problem</span></h2>
+                </div>
+                <div
+                    class="prose prose-invert prose-xl text-paper-muted font-light leading-relaxed pl-18 border-l border-white/5 pl-8">
+                    <p class="mb-8">
+                        In a traditional election (paper or digital), you hand your ballot to a "black box"—a machine or
+                        a pile.
+                        Once it leaves your hands, you lose all visibility. You are forced to trust that:
+                    </p>
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-4 text-white">
+                            <span class="w-2 h-2 rounded-full bg-brand-blue shadow-[0_0_10px_#2563EB]"></span> The
+                            machine recorded it correctly.
+                        </li>
+                        <li class="flex items-center gap-4 text-white">
+                            <span class="w-2 h-2 rounded-full bg-brand-blue shadow-[0_0_10px_#2563EB]"></span> It wasn't
+                            lost in transit.
+                        </li>
+                        <li class="flex items-center gap-4 text-white">
+                            <span class="w-2 h-2 rounded-full bg-brand-blue shadow-[0_0_10px_#2563EB]"></span> It wasn't
+                            replaced by a fake ballot.
+                        </li>
+                    </ul>
+                    <p
+                        class="text-2xl font-serif italic text-white/90 border-l-4 border-brand-blue pl-6 py-4 bg-gradient-to-r from-brand-blue/10 to-transparent rounded-r-xl">
+                        "Trust us" is not a security model. It is a security failure.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEMO MODE TOGGLE -->
+        <section class="py-10 bg-black/40 backdrop-blur-sm">
+            <div class="container mx-auto px-6 max-w-xl">
+                <div
+                    class="glass-panel rounded-2xl p-6 flex items-center gap-6 border border-white/10 hover:border-brand-blue/30 transition-all">
+                    <label class="relative w-14 h-8 cursor-pointer flex-shrink-0">
+                        <input type="checkbox" id="demo-mode-toggle" class="sr-only peer">
+                        <div
+                            class="w-14 h-8 bg-white/10 rounded-full peer-checked:bg-amber-500/80 transition-colors shadow-inner">
+                        </div>
+                        <div
+                            class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full peer-checked:translate-x-6 transition-transform shadow-md">
+                        </div>
+                    </label>
+                    <div>
+                        <div class="font-bold text-white text-lg">Simulation Mode</div>
+                        <div class="text-sm text-paper-muted">Reveal vote choices after election closes (for learning)
+                        </div>
+                    </div>
+                </div>
+                <div id="demo-warning"
+                    class="hidden mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-sm flex items-center gap-3 animate-fade-in shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+                    <span class="text-xl">⚠️</span>
+                    <span><strong>Demo Mode Active:</strong> Vote choices will be visible in public record.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAPTER 2: INTERACTIVE DEMO -->
+        <section id="demo" class="py-40 relative bg-gradient-to-b from-black/60 to-black/40 backdrop-blur-[2px]">
+            <div class="container mx-auto px-6 relative z-10 flex flex-col items-center gap-32">
+
+                <!-- Voting Booth -->
+                <div class="w-full max-w-3xl flex flex-col items-center">
+                    <div class="text-center mb-16">
+                        <h2 class="text-5xl md:text-6xl font-serif text-white mb-6">Cast Your Vote</h2>
+                        <p class="text-paper-muted text-xl font-light max-w-lg mx-auto">
+                            Use the secure booth below. Unlike a standard machine, this system will issue a <strong
+                                class="text-white border-b border-brand-blue">cryptographic receipt</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Voting Booth Panel -->
+                    <div
+                        class="w-full glass-panel rounded-3xl p-10 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 backdrop-blur-2xl">
+                        <!-- Top Gradient Line -->
+                        <div
+                            class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-blue to-transparent opacity-70 shadow-[0_0_10px_#2563EB]">
+                        </div>
+
+                        <div class="flex items-center justify-between mb-10">
+                            <h3 class="font-serif font-bold text-2xl text-white flex items-center gap-3">
+                                <span class="w-2 h-8 bg-brand-blue rounded-full"></span> Secure Booth
+                            </h3>
+                            <div
+                                class="text-xs font-mono text-brand-blue border border-brand-blue/30 px-4 py-1.5 rounded-full bg-brand-blue/5 tracking-wider shadow-[0_0_10px_rgba(37,99,235,0.1)]">
+                                ID: TERM-04</div>
+                        </div>
+
+                        <p class="text-xs text-paper-muted uppercase tracking-[0.2em] mb-6 font-mono pl-1">Select
+                            Candidate</p>
+
+                        <div class="space-y-4 mb-10" id="candidates-list">
+                            <button data-candidate="A"
+                                class="candidate-btn group w-full p-6 text-left border border-white/5 rounded-2xl transition-all font-sans text-xl flex justify-between items-center bg-black/20 hover:bg-brand-blue/5 hover:border-brand-blue/40 relative overflow-hidden">
+                                <span
+                                    class="group-hover:text-brand-glow transition-colors font-medium relative z-10">Candidate
+                                    Alpha</span>
+                                <div
+                                    class="w-6 h-6 rounded-full border-2 border-paper-muted candidate-radio transition-all shadow-inner relative z-10 group-hover:border-brand-blue group-hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]">
+                                </div>
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-brand-blue/0 to-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+                            </button>
+                            <button data-candidate="B"
+                                class="candidate-btn group w-full p-6 text-left border border-white/5 rounded-2xl transition-all font-sans text-xl flex justify-between items-center bg-black/20 hover:bg-brand-blue/5 hover:border-brand-blue/40 relative overflow-hidden">
+                                <span
+                                    class="group-hover:text-brand-glow transition-colors font-medium relative z-10">Candidate
+                                    Beta</span>
+                                <div
+                                    class="w-6 h-6 rounded-full border-2 border-paper-muted candidate-radio transition-all shadow-inner relative z-10 group-hover:border-brand-blue group-hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]">
+                                </div>
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-brand-blue/0 to-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+                            </button>
+                            <button data-candidate="C"
+                                class="candidate-btn group w-full p-6 text-left border border-white/5 rounded-2xl transition-all font-sans text-xl flex justify-between items-center bg-black/20 hover:bg-brand-blue/5 hover:border-brand-blue/40 relative overflow-hidden">
+                                <span
+                                    class="group-hover:text-brand-glow transition-colors font-medium relative z-10">Candidate
+                                    Gamma</span>
+                                <div
+                                    class="w-6 h-6 rounded-full border-2 border-paper-muted candidate-radio transition-all shadow-inner relative z-10 group-hover:border-brand-blue group-hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]">
+                                </div>
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-brand-blue/0 to-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+                            </button>
+                        </div>
+
+                        <button id="cast-vote-btn"
+                            class="w-full px-8 py-5 bg-gradient-to-r from-brand-blue to-brand-accent text-white text-lg rounded-2xl font-bold tracking-wider shadow-[0_10px_30px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center gap-3 overflow-hidden relative group">
+                            <div
+                                class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            </div>
+                            <span class="relative z-10">ENCRYPT & CAST BALLOT</span>
+                        </button>
+
+                        <!-- Receipt Display -->
+                        <div id="receipt-panel"
+                            class="hidden mt-10 text-center animate-fade-in-up border-t border-white/5 pt-10">
+                            <div
+                                class="w-20 h-20 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20 text-4xl shadow-[0_0_30px_rgba(74,222,128,0.2)] animate-pulse-slow">
+                                ✓</div>
+                            <h4 class="text-3xl font-serif font-bold mb-3 text-white">Vote Encrypted & Cast</h4>
+                            <p class="text-sm text-paper-muted mb-8">This receipt is your proof. Keep it safe.</p>
+
+                            <div id="receipt-token-box"
+                                class="bg-black/60 p-6 rounded-xl border border-white/10 mb-6 font-mono text-2xl tracking-widest text-center select-all cursor-text text-brand-glow shadow-inner break-all">
+                                ...
+                            </div>
+
+                            <button id="copy-receipt-btn"
+                                class="px-8 py-2.5 text-xs font-bold uppercase tracking-widest border border-white/10 rounded-full text-paper-muted hover:text-white hover:border-white hover:bg-white/5 transition-all mb-8">
+                                Copy Receipt
+                            </button>
+
+                            <div
+                                class="bg-blue-900/10 border border-brand-blue/20 rounded-xl p-5 text-left text-sm text-brand-glow flex gap-4 items-start shadow-[0_0_20px_rgba(37,99,235,0.05)]">
+                                <div class="text-xl">🛡️</div>
+                                <div><strong>Zero-Knowledge Proof:</strong> This receipt mathematically proves your vote
+                                    was counted without revealing <em>who</em> you voted for.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Public Record -->
+                <div class="w-full max-w-5xl">
+                    <div class="text-center mb-10">
+                        <h3 class="text-3xl font-serif text-white mb-4 flex items-center justify-center gap-4">
+                            <span class="p-2 rounded-lg bg-white/5 border border-white/10">
+                                <svg class="text-brand-blue" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                                </svg>
+                            </span>
+                            The Public Record
+                        </h3>
+                        <p class="text-sm text-paper-muted max-w-xl mx-auto leading-relaxed">
+                            Every vote appears here instantly. An append-only, immutable ledger.
+                            <span class="text-white border-b border-brand-blue/50 pb-0.5">Anyone can audit this.</span>
+                        </p>
+                    </div>
+
+                    <div
+                        class="glass-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl backdrop-blur-xl">
+                        <div
+                            class="bg-white/5 px-8 py-5 border-b border-white/5 flex justify-between items-center backdrop-blur-md">
+                            <h4
+                                class="font-bold text-xs text-white uppercase tracking-[0.15em] flex items-center gap-2">
+                                <span class="w-2 h-2 bg-brand-blue rounded-full"></span> Live Blockchain Feed
+                            </h4>
+                            <div
+                                class="flex items-center gap-2 text-[10px] font-bold tracking-wider text-green-400 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20 shadow-[0_0_10px_rgba(74,222,128,0.1)]">
+                                <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+                                LIVE
+                            </div>
+                        </div>
+                        <div class="max-h-[450px] overflow-y-auto font-mono text-sm custom-scrollbar bg-black/20">
+                            <table class="w-full text-left border-collapse">
+                                <thead
+                                    class="bg-black/60 text-paper-muted sticky top-0 backdrop-blur-xl z-20 border-b border-white/10">
+                                    <tr>
+                                        <th
+                                            class="px-8 py-4 font-bold text-[10px] uppercase tracking-widest text-white/50">
+                                            Timestamp</th>
+                                        <th
+                                            class="px-8 py-4 font-bold text-[10px] uppercase tracking-widest text-white/50">
+                                            Ballot Hash (SHA-256)</th>
+                                        <th
+                                            class="px-8 py-4 font-bold text-[10px] uppercase tracking-widest text-white/50">
+                                            Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="board-tbody" class="divide-y divide-white/5">
+                                    <tr>
+                                        <td colspan="3"
+                                            class="px-8 py-16 text-center text-paper-muted/50 italic font-light">Waiting
+                                            for first ballot block...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div
+                            class="px-8 py-4 bg-black/40 border-t border-white/5 text-[10px] text-paper-muted flex justify-between font-mono items-center backdrop-blur-md">
+                            <div class="flex gap-6 uppercase tracking-wider">
+                                <span>TOTAL RECORDS: <span id="ballot-count"
+                                        class="text-white font-bold">0</span></span>
+                                <span>HEIGHT: <span id="block-height" class="text-white font-bold">0</span></span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="uppercase tracking-wider">CHAIN HEAD</span>
+                                <span id="chain-head-short"
+                                    class="text-brand-glow bg-brand-blue/10 px-3 py-1 rounded-md border border-brand-blue/20 font-bold">GENESIS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CHAPTER 3: VERIFICATION -->
+        <section id="verification"
+            class="py-40 bg-gradient-to-b from-black/20 via-black/40 to-black/60 border-t border-white/5 relative overflow-hidden backdrop-blur-[2px]">
+            <div class="container mx-auto px-6 max-w-4xl relative z-10">
+                <div class="flex gap-4 items-start mb-12 justify-center">
+                    <div class="text-center">
+                        <h2 class="text-5xl md:text-6xl font-serif text-white mb-6">Verify Your Receipt</h2>
+                        <p class="text-paper-muted text-xl font-light max-w-lg mx-auto leading-relaxed">
+                            Don't just trust. Verify. Paste your receipt token below to mathematically confirm your vote
+                            is on the chain.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-10 shadow-2xl border border-white/10 backdrop-blur-xl">
+                    <div class="flex flex-col md:flex-row gap-5 mb-10">
+                        <input type="text" id="receipt-input" placeholder="Paste your receipt token here..."
+                            class="flex-1 bg-black/40 border border-white/10 rounded-2xl px-8 py-5 font-mono text-base text-paper-text placeholder:text-paper-muted/50 focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all shadow-inner">
+                        <button id="verify-btn"
+                            class="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-bold tracking-wider hover:bg-white/10 hover:border-white/30 transition-all flex items-center justify-center gap-3 shadow-lg">
+                            <span>🔍</span> Verify
+                        </button>
+                    </div>
+
+                    <div id="verify-result"
+                        class="hidden bg-black/30 rounded-2xl p-8 border border-white/5 animate-fade-in shadow-inner">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHAPTER 4: AUDIT -->
+        <!-- Added bg-transparent -->
+        <section id="audit"
+            class="py-40 border-t border-white/5 relative bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-[2px]">
+            <div class="container mx-auto px-6 max-w-6xl">
+
+                <div class="text-center mb-24">
+                    <h2 class="text-5xl md:text-7xl font-serif text-white mb-8">Independent Verification</h2>
+                    <p class="text-paper-muted max-w-2xl mx-auto font-light text-xl leading-relaxed">
+                        You don't need permission to audit this election.<br>
+                        Download the ledger. Run the code. Check the math.
+                    </p>
+                </div>
+
+                <!-- Centered Terminal -->
+                <div class="w-full max-w-4xl mx-auto mb-20 relative group">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-brand-blue to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000">
+                    </div>
+
+                    <div
+                        class="relative font-mono text-sm bg-black rounded-2xl shadow-[0_50px_100px_-20px_rgba(0,0,0,0.9)] overflow-hidden border border-white/10">
+                        <div class="bg-[#111] px-6 py-4 flex items-center justify-between border-b border-white/5">
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                            </div>
+                            <div class="text-xs text-paper-muted opacity-50 uppercase tracking-widest">
+                                root@audit-terminal:~</div>
+                        </div>
+
+                        <div id="terminal-body"
+                            class="p-8 h-96 overflow-y-auto space-y-3 bg-black/90 font-mono text-xs md:text-sm custom-scrollbar">
+                            <div class="text-paper-muted">Welcome to the Independent Audit Verification Tool v2.1.0
+                            </div>
+                            <div class="text-paper-muted">Running locally in browser...</div>
+                            <br>
+                            <div class="text-brand-glow animate-pulse">> Ready to initiate chain verification
+                                protocol...</div>
+                        </div>
+
+                        <div id="audit-progress" class="hidden px-0 pb-0">
+                            <div class="h-1 bg-white/5 overflow-hidden">
+                                <div id="progress-fill"
+                                    class="h-full bg-brand-blue w-0 transition-all duration-100 ease-out shadow-[0_0_10px_#2563EB]">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6 bg-[#0a0a0a] border-t border-white/5 flex gap-4">
+                            <button id="run-audit-btn"
+                                class="bg-green-500/5 text-green-400 border border-green-500/20 px-8 py-3 rounded-lg text-xs hover:bg-green-500/10 hover:border-green-500/40 transition-all uppercase tracking-[0.2em] font-bold shadow-[0_0_20px_rgba(74,222,128,0.05)] hover:shadow-[0_0_30px_rgba(74,222,128,0.1)]">
+                                >_ Run Verification Script
+                            </button>
+                            <button id="close-election-btn"
+                                class="bg-white/5 text-paper-muted border border-white/10 px-8 py-3 rounded-lg text-xs hover:bg-red-500/5 hover:text-red-400 hover:border-red-500/20 ml-auto transition-all uppercase tracking-[0.2em] font-bold">
+                                Close Election
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tally Results -->
+                <div id="tally-results"
+                    class="hidden mt-8 w-full max-w-4xl mx-auto glass-panel rounded-2xl p-10 animate-fade-in-up"></div>
+
+                <!-- Admin Controls -->
+                <div class="flex justify-center mb-24">
+                    <div
+                        class="inline-flex items-center gap-6 px-8 py-4 bg-white/5 rounded-full border border-white/5 backdrop-blur-md shadow-lg">
+                        <div id="election-status"
+                            class="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-green-400">
+                            <span
+                                class="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_10px_currentColor] animate-pulse"></span>
+                            Open
+                        </div>
+                        <div class="w-px h-6 bg-white/10"></div>
+                        <button id="reset-election-btn"
+                            class="text-xs font-bold text-paper-muted hover:text-white transition-colors uppercase tracking-[0.2em] hover:underline decoration-white/30 underline-offset-4">
+                            Reset Simulation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ANIMATED AUDIT PIPELINE -->
+                <div class="relative max-w-6xl mx-auto mt-24">
+                    <!-- Connecting Line (Desktop) -->
+                    <div
+                        class="hidden md:block absolute top-[40%] left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-blue/20 to-transparent -translate-y-1/2 z-0">
+                    </div>
+                    <!-- Pulse Line -->
+                    <div
+                        class="hidden md:block absolute top-[40%] left-0 w-full h-[1px] bg-brand-blue/40 -translate-y-1/2 z-0">
+                        <div
+                            class="absolute top-0 left-0 h-full w-20 bg-brand-blue blur-[2px] animate-[slideRight_3s_linear_infinite]">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative z-10">
+                        <!-- Box 1: Signature -->
+                        <div class="group relative perspective-1000">
+                            <div
+                                class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-500 group-hover:transform group-hover:scale-105 group-hover:border-brand-blue/40 group-hover:shadow-[0_0_40px_rgba(37,99,235,0.3)] flex flex-col items-center text-center h-full">
+                                <div
+                                    class="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-blue/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+
+                                <div class="w-32 h-32 mb-8 relative">
+                                    <div
+                                        class="absolute inset-0 bg-brand-blue/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow">
+                                    </div>
+                                    <img src="icon-signature.png" alt="Signature"
+                                        class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(37,99,235,0.6)] group-hover:rotate-6 transition-transform duration-700">
+                                </div>
+
+                                <h4
+                                    class="text-2xl font-serif text-white mb-4 group-hover:text-brand-glow transition-colors">
+                                    1. Cryptographic<br>Signature</h4>
+                                <p
+                                    class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">
+                                    Verifies the origin of every vote. Validates the device's private key against the
+                                    election authority's public registry.
+                                </p>
+
+                                <!-- Connection Dot (Desktop) -->
+                                <div
+                                    class="hidden md:flex absolute -right-6 top-[40%] w-3 h-3 bg-black border border-brand-blue rounded-full z-20 transform -translate-y-1/2 items-center justify-center group-hover:scale-150 transition-all shadow-[0_0_10px_#2563EB]">
+                                    <div class="w-1 h-1 bg-brand-blue rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Box 2: Hash -->
+                        <div class="group relative perspective-1000">
+                            <div
+                                class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-500 group-hover:transform group-hover:scale-105 group-hover:border-purple-500/40 group-hover:shadow-[0_0_40px_rgba(168,85,247,0.3)] flex flex-col items-center text-center h-full">
+                                <div
+                                    class="absolute inset-0 rounded-3xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+
+                                <div class="w-32 h-32 mb-8 relative">
+                                    <div
+                                        class="absolute inset-0 bg-purple-500/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow">
+                                    </div>
+                                    <img src="icon-hash.png" alt="Hash"
+                                        class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-700">
+                                </div>
+
+                                <h4
+                                    class="text-2xl font-serif text-white mb-4 group-hover:text-purple-300 transition-colors">
+                                    2. Blockchain<br>Consistency</h4>
+                                <p
+                                    class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">
+                                    Recomputes the Merkle Root. Ensures the ledger is immutable—no blocks added,
+                                    removed, or modified.
+                                </p>
+
+                                <!-- Connection Dot -->
+                                <div
+                                    class="hidden md:flex absolute -right-6 top-[40%] w-3 h-3 bg-black border border-purple-500 rounded-full z-20 transform -translate-y-1/2 items-center justify-center group-hover:scale-150 transition-all shadow-[0_0_10px_#A855F7]">
+                                    <div class="w-1 h-1 bg-purple-500 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Box 3: Tally -->
+                        <div class="group relative perspective-1000">
+                            <div
+                                class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-500 group-hover:transform group-hover:scale-105 group-hover:border-emerald-500/40 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.3)] flex flex-col items-center text-center h-full">
+                                <div
+                                    class="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                </div>
+
+                                <div class="w-32 h-32 mb-8 relative">
+                                    <div
+                                        class="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow">
+                                    </div>
+                                    <img src="icon-tally.png" alt="Tally"
+                                        class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:-translate-y-2 transition-transform duration-700">
+                                </div>
+
+                                <h4
+                                    class="text-2xl font-serif text-white mb-4 group-hover:text-emerald-300 transition-colors">
+                                    3. Zero-Knowledge<br>Tally</h4>
+                                <p
+                                    class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">
+                                    Mathematically sums the encrypted votes. Proves result correctness without ever
+                                    decrypting individual ballots.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SHARE THIS RESEARCH SECTION -->
+        <section class="py-32 relative bg-black/80 backdrop-blur-[2px] border-t border-white/5">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-serif text-white mb-4">Share this Research</h2>
+                    <p class="text-paper-muted text-lg font-light opacity-80">Help spread awareness about verifiable
+                        voting architectures.</p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-center gap-4 mb-24 flex-wrap">
+                    <!-- Post on X -->
+                    <a href="https://x.com/intent/tweet?text=Check%20out%20The%20Glass%20Ballot%20Box%20-%20Verifiable%20Voting%20Artifact&url=https://abhnv.me"
+                        target="_blank"
+                        class="flex items-center gap-3 bg-black border border-white/10 hover:border-white text-white px-8 py-3.5 rounded-full font-medium transition-all hover:-translate-y-1 min-w-[160px] justify-center">
+                        <img src="x-logo-custom.png" width="20" height="20" alt="X" class="object-contain scale-[1.8]">
+                        Post on X
+                    </a>
+                    <!-- Share (LinkedIn) -->
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://abhnv.me" target="_blank"
+                        class="flex items-center gap-3 bg-[#0a66c2] text-white px-8 py-3.5 rounded-full font-medium hover:bg-[#004182] transition-all hover:-translate-y-1 min-w-[160px] justify-center shadow-[0_4px_12px_rgba(10,102,194,0.3)]">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                        Share
+                    </a>
+                    <!-- Copy Link -->
+                    <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!')"
+                        class="flex items-center gap-3 bg-[#3a3a3a] hover:bg-[#4a4a4a] text-white px-8 py-3.5 rounded-full font-medium transition-all hover:-translate-y-1 min-w-[160px] justify-center border border-white/5">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        Copy Link
+                    </button>
+                </div>
+
+                <div class="flex flex-col items-center border-t border-white/5 pt-12">
+                    <div class="flex flex-col items-center gap-2 mb-8">
+                        <h5 class="text-white text-3xl font-bold">Abhinav Raj</h5>
+                        <p class="text-paper-muted text-lg">Author / Researcher</p>
+                    </div>
+
+                    <div class="flex items-center gap-6">
+                        <!-- LinkedIn -->
+                        <a href="https://www.linkedin.com/in/abhnv07/" target="_blank"
+                            class="w-10 h-10 bg-[#0a66c2] rounded flex items-center justify-center text-white hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(10,102,194,0.3)]">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                            </svg>
+                        </a>
+                        <!-- X -->
+                        <a href="https://x.com/Abhnv007" target="_blank"
+                            class="w-10 h-10 bg-black border border-white/20 rounded flex items-center justify-center text-white hover:border-white transition-colors">
+                            <img src="x-logo-custom.png" width="20" height="20" alt="X"
+                                class="object-contain scale-[1.8]">
+                        </a>
+                        <a href="https://abhnv.me" target="_blank"
+                            class="text-[#4ade80] hover:text-[#22c55e] transition-colors font-medium text-lg px-2">abhnv.me</a>
+                        <a href="https://abhnv.in" target="_blank"
+                            class="text-[#4ade80] hover:text-[#22c55e] transition-colors font-medium text-lg px-2">abhnv.in</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="py-24 bg-black border-t border-white/5 text-center relative z-10">
+            <div class="container mx-auto px-6">
+                <div
+                    class="w-12 h-12 mx-auto bg-brand-blue/5 border border-brand-blue/20 text-brand-blue flex items-center justify-center font-serif font-bold rounded-xl mb-8 shadow-lg">
+                    G</div>
+                <p class="font-serif text-2xl text-white mb-4">The Glass Ballot Box</p>
+                <div class="flex justify-center gap-6 mb-8 text-paper-muted text-sm">
+                    <a href="https://abhnv.me" class="hover:text-white transition-colors">abhnv.me</a>
+                    <span>•</span>
+                    <a href="https://abhnv.in" class="hover:text-white transition-colors">abhnv.in</a>
+                </div>
+                <p
+                    class="text-xs text-paper-muted font-mono tracking-[0.3em] uppercase opacity-50 hover:opacity-100 transition-opacity cursor-default">
+                    Interactive Research Artifact • January 2026
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="three-scene.js"></script>
+    <script src="crypto.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
