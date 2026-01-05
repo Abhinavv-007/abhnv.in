@@ -24,6 +24,155 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 // ============================================
+// MOCK SERVER (For Static Hosting)
+// ============================================
+const MockServer = {
+    DELAY: 300,
+    db: {
+        election: {
+            id: 'mock-election-001',
+            status: 'open',
+            chain_head: 'GENESIS',
+            mode: 'demo'
+        },
+        ballots: []
+    },
+
+    init() {
+        try {
+            const stored = localStorage.getItem('glass_ballot_mock_db');
+            if (stored) this.db = JSON.parse(stored);
+        } catch (e) { console.error('Mock DB init failed', e); }
+    },
+
+    save() {
+        localStorage.setItem('glass_ballot_mock_db', JSON.stringify(this.db));
+    },
+
+    async handle(url, method, body) {
+        await new Promise(r => setTimeout(r, this.DELAY));
+
+        // GET /api/board
+        if (url.includes('/api/board') && method === 'GET') {
+            return { ok: true, election: this.db.election, ballots: this.db.ballots };
+        }
+
+        // POST /api/cast
+        if (url.includes('/api/cast') && method === 'POST') {
+            const ballotData = JSON.parse(body);
+            const index = this.db.ballots.length + 1;
+            const prevHash = this.db.ballots.length > 0
+                ? this.db.ballots[this.db.ballots.length - 1].chain_hash
+                : this.db.election.chain_head;
+
+            // Re-compute mock chain hash (simplified)
+            // In real app, server does this. Here we simulate it.
+            // We need Crypto.computeChainHash but it might be async.
+            // We'll trust the client side calculation for mock or just mock it.
+            // Better: use Crypto from window (global)
+
+            const castAt = new Date().toISOString();
+            // Mock chain hash logic (simplified signature)
+            // chain_hash = SHA256(prev_hash + election_id + index + commit + cast_at)
+            // We will do a simpler hash for mock or try to use real one if possible.
+            // Let's use a random string for mock if Crypto is unavailable, 
+            // BUT verifyReceipt uses it.
+            // We'll allow the client to verify "GENESIS" logic if we keep chain consistent.
+
+            // To ensure audit works, we MUST compute valid hash.
+            // app.js has accessible "Crypto" class? YES.
+
+            const chainHash = await Crypto.computeChainHash(
+                prevHash,
+                this.db.election.id,
+                index,
+                ballotData.commit,
+                castAt
+            );
+
+            const ballot = {
+                index,
+                cast_at: castAt,
+                commit: ballotData.commit,
+                receipt_hash: ballotData.receipt_hash,
+                prev_hash: prevHash,
+                chain_hash: chainHash,
+                // Demo fields
+                choice: ballotData.choice,
+                nonce: ballotData.nonce
+            };
+
+            this.db.ballots.push(ballot);
+            this.db.election.chain_head = chainHash;
+            this.save();
+            return { ok: true, index, chain_hash: chainHash, cast_at: castAt };
+        }
+
+        // GET /api/receipt
+        if (url.includes('/api/receipt') && method === 'GET') {
+            const params = new URLSearchParams(url.split('?')[1]);
+            const receiptHash = params.get('receipt_hash');
+            const ballot = this.db.ballots.find(b => b.receipt_hash === receiptHash);
+            return { ok: true, found: !!ballot, ballot };
+        }
+
+        // POST /api/close
+        if (url.includes('/api/close') && method === 'POST') {
+            this.db.election.status = 'closed';
+            // Mock tally logic
+            const tally = { A: 0, B: 0, C: 0 }; // Added C for Gamma
+            this.db.ballots.forEach(b => {
+                if (b.choice && tally[b.choice] !== undefined) tally[b.choice]++;
+            });
+            const tallyProof = {
+                tally,
+                total_revealed: this.db.ballots.filter(b => b.choice).length
+            };
+            this.save();
+            return { ok: true, tally_proof: tallyProof };
+        }
+
+        // POST /api/reset
+        if (url.includes('/api/reset') && method === 'POST') {
+            this.db.ballots = [];
+            this.db.election.status = 'open';
+            this.db.election.chain_head = 'GENESIS';
+            this.save();
+            return { ok: true };
+        }
+
+        return { ok: false, error: 'Endpoint not found in Mock' };
+    }
+};
+
+MockServer.init();
+
+// Fetch Wrapper
+async function apiCall(endpoint, options = {}) {
+    const method = options.method || 'GET';
+    const body = options.body;
+
+    try {
+        // Try real API first
+        const res = await fetch(endpoint, options);
+        // If 404/500 or sends back HTML (common in SPAs for 404s)
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+            return res;
+        }
+        throw new Error('API not available');
+    } catch (e) {
+        console.warn('Backend unavailable. Switching to Client-Side Mock.');
+        const mockRes = await MockServer.handle(endpoint, method, body);
+        // Return a Response-like object
+        return {
+            ok: mockRes.ok,
+            json: async () => mockRes
+        };
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -76,7 +225,7 @@ function startPolling() {
 // ============================================
 async function fetchBoard() {
     try {
-        const res = await fetch(`/api/board?election_id=${state.electionId}`);
+        const res = await apiCall(`/api/board?election_id=${state.electionId}`);
         const data = await res.json();
 
         if (data.ok) {
@@ -126,7 +275,7 @@ async function castVote() {
             body.nonce = nonce;
         }
 
-        const res = await fetch('/api/cast', {
+        const res = await apiCall('/api/cast', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -171,7 +320,7 @@ async function verifyReceipt() {
 
     try {
         const receiptHash = await Crypto.sha256(token);
-        const res = await fetch(`/api/receipt?election_id=${state.electionId}&receipt_hash=${receiptHash}`);
+        const res = await apiCall(`/api/receipt?election_id=${state.electionId}&receipt_hash=${receiptHash}`);
         const data = await res.json();
 
         const resultDiv = $('#verify-result');
@@ -237,7 +386,7 @@ async function runAudit() {
     await delay(300);
 
     try {
-        const boardRes = await fetch(`/api/board?election_id=${state.electionId}`);
+        const boardRes = await apiCall(`/api/board?election_id=${state.electionId}`);
         const boardData = await boardRes.json();
 
         if (!boardData.ok) {
@@ -313,7 +462,7 @@ async function closeElection() {
     if (!confirm('Close the election? This cannot be undone.')) return;
 
     try {
-        const res = await fetch('/api/close', {
+        const res = await apiCall('/api/close', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ election_id: state.electionId })
@@ -338,7 +487,7 @@ async function resetElection() {
     if (!confirm('Reset election? This will delete all votes.')) return;
 
     try {
-        const res = await fetch('/api/reset', {
+        const res = await apiCall('/api/reset', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ election_id: state.electionId })
