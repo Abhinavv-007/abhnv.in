@@ -27,6 +27,13 @@ function App() {
     localStorage.setItem('abhnv-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    // Manually track virtual pageviews for modes since there is no router
+    if (window.va) {
+      window.va('pageview', { path: `/${mode === 'landing' ? '' : mode}` });
+    }
+  }, [mode]);
+
   return (
     <>
       {/* Force container to take up space and have background */}
