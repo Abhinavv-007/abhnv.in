@@ -30,7 +30,7 @@ scene.add(pointLight2);
 // Geometric Shapes (The cool floating elements)
 const colors = [0x2563EB, 0x1D4ED8, 0x60A5FA, 0x1E40AF];
 const shapes = [];
-const shapeCount = 60; // Increased count for "full website" feel
+const shapeCount = 90; // Increased count for "full website" feel
 
 for (let i = 0; i < shapeCount; i++) {
     const type = Math.random();
