@@ -253,7 +253,7 @@ async function castVote() {
 
     const btn = $('#cast-vote-btn');
     btn.disabled = true;
-    btn.innerHTML = '⏳ ENCRYPTING...';
+    btn.innerHTML = 'ENCRYPTING...';
 
     try {
         const receiptToken = Crypto.generateToken();
@@ -301,7 +301,7 @@ async function castVote() {
         alert('Failed to cast vote. Please try again.');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '📄 CAST BALLOT';
+        btn.innerHTML = 'CAST BALLOT';
     }
 }
 
@@ -330,7 +330,6 @@ async function verifyReceipt() {
             resultDiv.className = 'bg-green-500/10 border border-green-500/30 rounded-lg p-6';
             resultDiv.innerHTML = `
         <div class="flex items-center gap-3 text-green-400 text-lg font-serif mb-4">
-          <span>✅</span>
           <span>Receipt Verified - Your vote is recorded!</span>
         </div>
         <div class="grid grid-cols-2 gap-4 text-sm">
@@ -354,7 +353,6 @@ async function verifyReceipt() {
             resultDiv.className = 'bg-red-500/10 border border-red-500/30 rounded-lg p-6';
             resultDiv.innerHTML = `
         <div class="flex items-center gap-3 text-red-400 text-lg font-serif mb-2">
-          <span>❌</span>
           <span>Receipt Not Found</span>
         </div>
         <p class="text-paper-muted text-sm">This receipt token was not found. Please check that you've entered it correctly.</p>
@@ -365,7 +363,7 @@ async function verifyReceipt() {
         alert('Failed to verify receipt.');
     } finally {
         btn.disabled = false;
-        btn.textContent = '🔍 Verify';
+        btn.textContent = 'Verify';
     }
 }
 
