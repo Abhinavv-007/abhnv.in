@@ -593,7 +593,7 @@ function highlightBallotRow(index) {
     const row = $(`#board-tbody tr[data-index="${index}"]`);
     if (row) {
         row.classList.add('bg-brand-blue/20');
-        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
