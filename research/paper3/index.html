@@ -181,11 +181,30 @@
           observer.observe(section);
         }
 
+        // Fix Date Patch
+        function fixDate() {
+          const elements = document.querySelectorAll('div');
+          for (let el of elements) {
+            if (el.textContent.trim() === 'February 2026' && el.classList.contains('text-blue-400')) {
+              el.textContent = 'January 2026';
+              return;
+            }
+          }
+          // Retry if not found yet (react hydration)
+          if (retries < MAX_RETRIES) {
+            setTimeout(fixDate, 500);
+          }
+        }
+
         // Start observing
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initPrototypeBlock);
+          document.addEventListener('DOMContentLoaded', () => {
+            initPrototypeBlock();
+            fixDate();
+          });
         } else {
           initPrototypeBlock();
+          fixDate();
         }
       })();
   </script>
