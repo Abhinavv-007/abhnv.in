@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
+    state.verifiedBallots = new Set();
     setupEventListeners();
     await fetchBoard();
     startPolling();
@@ -350,6 +351,8 @@ async function verifyReceipt() {
       `;
 
             highlightBallotRow(data.ballot.index);
+            state.verifiedBallots.add(data.ballot.index);
+            renderBoard();
         } else {
             resultDiv.className = 'bg-red-500/10 border border-red-500/30 rounded-lg p-6';
             resultDiv.innerHTML = `
@@ -580,8 +583,10 @@ function renderBoard() {
           ${isUser ? '<span class="ml-2 px-1.5 py-0.5 bg-brand-blue text-white rounded text-[9px] font-bold tracking-widest">YOU</span>' : ''}
         </td>
         <td class="px-6 py-3 text-paper-muted flex items-center gap-1">
-          <svg class="text-green-500" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-          Verified
+          ${isUser && !state.verifiedBallots.has(ballot.index) ?
+                `<span class="text-yellow-500/80 text-[10px] uppercase tracking-wide">Voted (Verification Pending)</span>` :
+                `<svg class="text-green-500" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg> Verified`
+            }
         </td>
       </tr>
     `;
