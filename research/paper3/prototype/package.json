@@ -1,7 +1,7 @@
 {
   "name": "the-glass-ballot-box",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Verifiable election simulator with append-only logs and hash chain verification",
   "scripts": {
