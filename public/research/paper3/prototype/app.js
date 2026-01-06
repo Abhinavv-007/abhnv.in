@@ -230,6 +230,7 @@ async function fetchBoard() {
 
         if (data.ok) {
             state.election = data.election;
+            state.electionId = data.election.id;
             state.ballots = data.ballots;
             state.mode = data.election.mode || 'safe';
             renderBoard();
