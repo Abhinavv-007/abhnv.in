@@ -196,15 +196,31 @@
           }
         }
 
+        // Remove Bouncing Arrow
+        function removeArrow() {
+          const arrows = document.querySelectorAll('.animate-bounce');
+          arrows.forEach(arrow => {
+            // Ensure it's the one at the bottom of the hero
+            if (arrow.classList.contains('absolute') && arrow.classList.contains('bottom-10')) {
+              arrow.style.display = 'none';
+            }
+          });
+          if (retries < MAX_RETRIES) {
+            setTimeout(removeArrow, 500);
+          }
+        }
+
         // Start observing
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => {
             initPrototypeBlock();
             fixDate();
+            removeArrow();
           });
         } else {
           initPrototypeBlock();
           fixDate();
+          removeArrow();
         }
       })();
   </script>
