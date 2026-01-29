@@ -91,6 +91,22 @@
   <script src="../_next/static/chunks/polyfills-78c92fac7aa8fdd8.js" noModule=""></script>
   <link rel="stylesheet" href="/subtrack/coming-soon.css">
   <link rel="stylesheet" href="/subtrack/logo-fix.css">
+
+<style>
+  /* SUPER AGGRESSIVE LOADING FIX */
+  .animate-pulse, .loading-skeleton, [class*="skeleton"] {
+     display: none !important;
+     opacity: 0 !important;
+     visibility: hidden !important;
+     animation: none !important;
+  }
+  /* Fix logo visibility specifically */
+  img[src*="logo"], .logo {
+     opacity: 1 !important;
+     visibility: visible !important;
+     display: block !important;
+  }
+</style>
 </head>
 
 <body class="min-h-screen-safe bg-background font-overpass antialiased __variable_68a839">
