@@ -16,8 +16,8 @@ def fix_file(file_path):
     content = content.replace('href="/subtrack/help/"', 'href="/subtrack/help.html"')
     
     # 2. Fix Demo Link just in case: "/subtrack/demo" -> "/subtrack/demo.html"
-    # content = content.replace('href="/subtrack/demo"', 'href="/subtrack/demo.html"')
-    # content = content.replace('href="/subtrack/demo/"', 'href="/subtrack/demo.html"')
+    content = content.replace('href="/subtrack/demo"', 'href="/subtrack/demo.html"')
+    content = content.replace('href="/subtrack/demo/"', 'href="/subtrack/demo.html"')
     
     # 3. Fix Image Paths if needed
     # If the HTML asks for .webp but we only have .png in testimonials, or vice versa.

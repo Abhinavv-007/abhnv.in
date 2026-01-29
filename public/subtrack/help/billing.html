@@ -107,6 +107,22 @@
      display: block !important;
   }
 </style>
+
+<style>
+  /* SUPER AGGRESSIVE LOADING FIX */
+  .animate-pulse, .loading-skeleton, [class*="skeleton"] {
+     display: none !important;
+     opacity: 0 !important;
+     visibility: hidden !important;
+     animation: none !important;
+  }
+  /* Fix logo visibility specifically */
+  img[src*="logo"], .logo {
+     opacity: 1 !important;
+     visibility: visible !important;
+     display: block !important;
+  }
+</style>
 </head>
 
 <body class="min-h-screen-safe bg-background font-overpass antialiased __variable_68a839">
