@@ -1,0 +1,34 @@
+/* Mobile Layout Fixes for Demo Page */
+@media (max-width: 1024px) {
+
+    /* 1. Hide the Desktop Sidebar on Mobile/Tablet */
+    /* Target the fixed sidebar container */
+    div.fixed.left-0.top-0.z-\[60\].w-\[68px\] {
+        display: none !important;
+        width: 0 !important;
+    }
+
+    /* 2. Reset Margin on Main Content */
+    /* Target the main content wrapper */
+    div.ml-\[68px\] {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* 3. Ensure Header spans full width */
+    header.sticky {
+        width: 100% !important;
+        padding-left: 1rem !important;
+        /* px-4 */
+        padding-right: 1rem !important;
+    }
+
+    /* 4. Ensure Mobile Menu Button is accessible */
+    /* It is usually fixed z-50 */
+    button.md\:hidden {
+        z-index: 9999 !important;
+    }
+}
+
+/* Fix "Something went wrong" overlay if it's purely styling */
+/* (We cannot fix actual JS crashes via CSS, but we can ensure layout is valid) */
