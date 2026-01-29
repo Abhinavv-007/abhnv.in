@@ -15,9 +15,9 @@
     img[alt*="mascot"],
     img[src*="mascot"],
     .mascot-container {
-      display: none !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
     }
 
     button[id^="radix-"]:hover {
@@ -26,7 +26,7 @@
 
     /* Force instant hidden for placeholders */
     .animate-pulse {
-      display: none !important;
+      display: block !important;
     }
   </style>
   <meta charSet="utf-8" />
@@ -36,13 +36,13 @@
   <link rel="preload" href="/subtrack/_next/static/media/e4af272ccee01ff0-s.p.woff2" as="font" crossorigin=""
     type="font/woff2" />
   <link rel="preload" as="image"
-    imageSrcSet="/subtrack/_next/image?url=%2F_static%2Flogo%2Flogo.png&amp;w=32&amp;q=75 1x, /_next/image?url=%2F_static%2Flogo%2Flogo.png&amp;w=64&amp;q=75 2x"
+    imageSrcSet="/subtrack/subtrack/_static/logo/logo.png 1x, /subtrack/_static/logo/logo.png 2x"
     fetchPriority="high" />
   <link rel="preload" as="image"
-    imageSrcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=640&amp;q=75 640w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=750&amp;q=75 750w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=828&amp;q=75 828w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=3840&amp;q=75 3840w"
+    imageSrcSet="/subtrack/subtrack/_static/landing/dashboard-hero-light.png 640w, /subtrack/_static/landing/dashboard-hero-light.png 750w, /subtrack/_static/landing/dashboard-hero-light.png 828w, /subtrack/_static/landing/dashboard-hero-light.png 1080w, /subtrack/_static/landing/dashboard-hero-light.png 1200w, /subtrack/_static/landing/dashboard-hero-light.png 1920w, /subtrack/_static/landing/dashboard-hero-light.png 2048w, /subtrack/_static/landing/dashboard-hero-light.png 3840w"
     imageSizes="(max-width: 768px) 100vw, (max-width: 1200px) 960px, 1100px" fetchPriority="high" />
   <link rel="preload" as="image"
-    imageSrcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=640&amp;q=75 640w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=750&amp;q=75 750w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=828&amp;q=75 828w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=3840&amp;q=75 3840w"
+    imageSrcSet="/subtrack/subtrack/_static/landing/dashboard-hero-dark.png 640w, /subtrack/_static/landing/dashboard-hero-dark.png 750w, /subtrack/_static/landing/dashboard-hero-dark.png 828w, /subtrack/_static/landing/dashboard-hero-dark.png 1080w, /subtrack/_static/landing/dashboard-hero-dark.png 1200w, /subtrack/_static/landing/dashboard-hero-dark.png 1920w, /subtrack/_static/landing/dashboard-hero-dark.png 2048w, /subtrack/_static/landing/dashboard-hero-dark.png 3840w"
     imageSizes="(max-width: 768px) 100vw, (max-width: 1200px) 960px, 1100px" fetchPriority="high" />
   <link rel="preload" as="image" href="https://www.google.com/s2/favicons?sz=64&amp;domain=netflix.com" />
   <link rel="preload" as="image" href="https://www.google.com/s2/favicons?sz=64&amp;domain=spotify.com" />
@@ -153,9 +153,9 @@
 <style>
   /* SUPER AGGRESSIVE LOADING FIX */
   .animate-pulse, .loading-skeleton, [class*="skeleton"] {
-     display: none !important;
-     opacity: 0 !important;
-     visibility: hidden !important;
+     display: block !important;
+     opacity: 1 !important;
+     visibility: visible !important;
      animation: none !important;
   }
   /* Fix logo visibility specifically */
@@ -169,9 +169,9 @@
 <style>
   /* SUPER AGGRESSIVE LOADING FIX */
   .animate-pulse, .loading-skeleton, [class*="skeleton"] {
-     display: none !important;
-     opacity: 0 !important;
-     visibility: hidden !important;
+     display: block !important;
+     opacity: 1 !important;
+     visibility: visible !important;
      animation: none !important;
   }
   /* Fix logo visibility specifically */
@@ -332,11 +332,11 @@
             <div class="relative"><img alt="SubTrack Mascot" loading="lazy" width="124.95" height="133.35"
                 decoding="async" data-nimg="1" class="absolute -top-12 right-8 z-20 hidden -translate-y-1/2 md:block"
                 style="color:transparent"
-                srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fhero-mascot.webp&amp;w=128&amp;q=85 1x, /_next/image?url=%2F_static%2Flanding%2Fhero-mascot.webp&amp;w=256&amp;q=85 2x"
+                srcSet="/subtrack/subtrack/_static/landing/hero-mascot.webp 1x, /subtrack/_static/landing/hero-mascot.webp 2x"
                 src="/subtrack/_static/landing/hero-mascot.webp" /><img
                 alt="SubTrack Mascot" loading="lazy" width="49.98" height="53.34" decoding="async" data-nimg="1"
                 class="absolute -top-4 right-8 z-20 block -translate-y-1/2 md:hidden" style="color:transparent"
-                srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fhero-mascot.webp&amp;w=64&amp;q=85 1x, /_next/image?url=%2F_static%2Flanding%2Fhero-mascot.webp&amp;w=128&amp;q=85 2x"
+                srcSet="/subtrack/subtrack/_static/landing/hero-mascot.webp 1x, /subtrack/_static/landing/hero-mascot.webp 2x"
                 src="/subtrack/_static/landing/hero-mascot.webp" />
               <div
                 class="relative z-10 overflow-hidden rounded-xl border bg-card shadow-[0_20px_50px_rgba(0,_0,_0,_0.25)] ring-1 ring-foreground/10 dark:shadow-[0_20px_50px_rgba(0,_0,_0,_0.5)] dark:ring-primary/25"
@@ -349,12 +349,12 @@
                 </div><img alt="SubTrack Dashboard - Track all your subscriptions in one place" fetchPriority="high"
                   width="1530" height="866" decoding="async" data-nimg="1" class="h-auto w-full dark:hidden"
                   style="color:transparent" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 960px, 1100px"
-                  srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=640&amp;q=75 640w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=750&amp;q=75 750w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=828&amp;q=75 828w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-light.png&amp;w=3840&amp;q=75 3840w"
+                  srcSet="/subtrack/subtrack/_static/landing/dashboard-hero-light.png 640w, /subtrack/_static/landing/dashboard-hero-light.png 750w, /subtrack/_static/landing/dashboard-hero-light.png 828w, /subtrack/_static/landing/dashboard-hero-light.png 1080w, /subtrack/_static/landing/dashboard-hero-light.png 1200w, /subtrack/_static/landing/dashboard-hero-light.png 1920w, /subtrack/_static/landing/dashboard-hero-light.png 2048w, /subtrack/_static/landing/dashboard-hero-light.png 3840w"
                   src="/subtrack/_static/landing/dashboard-hero-light.png" /><img
                   alt="SubTrack Dashboard - Track all your subscriptions in one place" fetchPriority="high" width="1530"
                   height="866" decoding="async" data-nimg="1" class="hidden h-auto w-full dark:block"
                   style="color:transparent" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 960px, 1100px"
-                  srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=640&amp;q=75 640w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=750&amp;q=75 750w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=828&amp;q=75 828w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1080&amp;q=75 1080w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1200&amp;q=75 1200w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=1920&amp;q=75 1920w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=2048&amp;q=75 2048w, /_next/image?url=%2F_static%2Flanding%2Fdashboard-hero-dark.png&amp;w=3840&amp;q=75 3840w"
+                  srcSet="/subtrack/subtrack/_static/landing/dashboard-hero-dark.png 640w, /subtrack/_static/landing/dashboard-hero-dark.png 750w, /subtrack/_static/landing/dashboard-hero-dark.png 828w, /subtrack/_static/landing/dashboard-hero-dark.png 1080w, /subtrack/_static/landing/dashboard-hero-dark.png 1200w, /subtrack/_static/landing/dashboard-hero-dark.png 1920w, /subtrack/_static/landing/dashboard-hero-dark.png 2048w, /subtrack/_static/landing/dashboard-hero-dark.png 3840w"
                   src="/subtrack/_static/landing/dashboard-hero-dark.png" />
               </div>
             </div>
@@ -977,7 +977,7 @@
                   <div class="mt-auto flex items-center gap-3 border-t border-border pt-4"><img alt="phs318u"
                       loading="lazy" width="40" height="40" decoding="async" data-nimg="1"
                       class="rounded-full bg-secondary object-cover ring-2 ring-card" style="color:transparent"
-                      srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fpfp%2Fphs318u.webp&amp;w=48&amp;q=75 1x, /_next/image?url=%2F_static%2Flanding%2Fpfp%2Fphs318u.webp&amp;w=96&amp;q=75 2x"
+                      srcSet="/subtrack/subtrack/_static/landing/pfp/phs318u.webp 1x, /subtrack/_static/landing/pfp/phs318u.webp 2x"
                       src="/subtrack/_static/landing/pfp/phs318u.webp" />
                     <div class="flex flex-col"><span
                         class="text-sm font-bold tracking-tight text-foreground">phs318u</span>
@@ -1008,7 +1008,7 @@
                   <div class="mt-auto flex items-center gap-3 border-t border-border pt-4"><img alt="FiveSkill"
                       loading="lazy" width="40" height="40" decoding="async" data-nimg="1"
                       class="rounded-full bg-secondary object-cover ring-2 ring-card" style="color:transparent"
-                      srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fpfp%2Ffiveskill.webp&amp;w=48&amp;q=75 1x, /_next/image?url=%2F_static%2Flanding%2Fpfp%2Ffiveskill.webp&amp;w=96&amp;q=75 2x"
+                      srcSet="/subtrack/subtrack/_static/landing/pfp/fiveskill.webp 1x, /subtrack/_static/landing/pfp/fiveskill.webp 2x"
                       src="/subtrack/_static/landing/pfp/fiveskill.webp" />
                     <div class="flex flex-col"><span
                         class="text-sm font-bold tracking-tight text-foreground">FiveSkill</span>
@@ -1496,7 +1496,7 @@
                   <div class="mt-auto flex items-center gap-3 border-t border-border pt-4"><img
                       alt="u/IntelligentDragon1" loading="lazy" width="40" height="40" decoding="async" data-nimg="1"
                       class="rounded-full bg-secondary object-cover ring-2 ring-card" style="color:transparent"
-                      srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fpfp%2Fintelligentdragon1.webp&amp;w=48&amp;q=75 1x, /_next/image?url=%2F_static%2Flanding%2Fpfp%2Fintelligentdragon1.webp&amp;w=96&amp;q=75 2x"
+                      srcSet="/subtrack/subtrack/_static/landing/pfp/intelligentdragon1.webp 1x, /subtrack/_static/landing/pfp/intelligentdragon1.webp 2x"
                       src="/subtrack/_static/landing/pfp/intelligentdragon1.webp" />
                     <div class="flex flex-col"><a
                         href="https://www.reddit.com/r/ProductivityApps/comments/1oj08q4/comment/nlzdjlf/"
@@ -1531,7 +1531,7 @@
                   <div class="mt-auto flex items-center gap-3 border-t border-border pt-4"><img alt="kjas"
                       loading="lazy" width="40" height="40" decoding="async" data-nimg="1"
                       class="rounded-full bg-secondary object-cover ring-2 ring-card" style="color:transparent"
-                      srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fpfp%2Fkjas.webp&amp;w=48&amp;q=75 1x, /_next/image?url=%2F_static%2Flanding%2Fpfp%2Fkjas.webp&amp;w=96&amp;q=75 2x"
+                      srcSet="/subtrack/subtrack/_static/landing/pfp/kjas.webp 1x, /subtrack/_static/landing/pfp/kjas.webp 2x"
                       src="/subtrack/_static/landing/pfp/kjas.webp" />
                     <div class="flex flex-col"><span
                         class="text-sm font-bold tracking-tight text-foreground">kjas</span>
@@ -1937,7 +1937,7 @@
                   <div class="relative z-10 -mb-8 lg:-mb-16"><img alt="Mascot celebrating with arms raised in victory"
                       loading="lazy" width="350" height="350" decoding="async" data-nimg="1"
                       class="h-auto w-56 object-contain sm:w-64 lg:w-72" style="color:transparent"
-                      srcSet="/subtrack/_next/image?url=%2F_static%2Flanding%2Fcta-mascot-victory.png&amp;w=384&amp;q=90 1x, /_next/image?url=%2F_static%2Flanding%2Fcta-mascot-victory.png&amp;w=750&amp;q=90 2x"
+                      srcSet="/subtrack/subtrack/_static/landing/cta-mascot-victory.png 1x, /subtrack/_static/landing/cta-mascot-victory.png 2x"
                       src="/subtrack/_static/landing/cta-mascot-victory.png" /></div>
                 </div>
               </div>
