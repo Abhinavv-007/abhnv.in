@@ -35,13 +35,25 @@ def fix_file(file_path):
             
         return f'src="{new_url}"'
 
-    # Pattern for src tags
-    # match src="/_next/image?url=...&..." 
-    # OR src="/subtrack/_next/image?url=...&..."
-    # We look for url=([^&"']+)
+    # Fixed Pattern: src="..._next/image?url=..."
+    # We catch the whole src attribute to parse it properly
+    pattern = r'src=["\'].*?_next/image\?url=([^&"\']+).*?["\']'
     
-    # We'll do a robust replacement for src="..." attributes containing _next/image
-    pattern = r'src="[^"]*?_next/image\?url=([^&"]+)(?:&amp;|[&])[^"]*"'
+    def replace_image_url(match):
+        # match.group(0) is the full src="..." string
+        # match.group(1) is the URL param (e.g. %2F_static%2Flogo.png)
+        
+        url_param_encoded = match.group(1)
+        url_param = urllib.parse.unquote(url_param_encoded)
+        
+        # url_param is like "/_static/logo/logo.png" or "/images/..."
+        # Prepend /subtrack if missing
+        if url_param.startswith("/") and not url_param.startswith("/subtrack/"):
+            new_url = "/subtrack" + url_param
+        else:
+            new_url = url_param
+            
+        return f'src="{new_url}"'
     
     content = re.sub(pattern, replace_image_url, content)
     
