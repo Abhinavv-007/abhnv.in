@@ -147,6 +147,18 @@
      display: block !important;
   }
 </style>
+
+<style>
+/* Fix Help Page 3D Transforms */
+.help-onboarding-img {
+  transform: none !important; /* Disable complex 3D if it's breaking */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transition: transform 0.2s ease !important;
+}
+.help-onboarding-img:hover {
+  transform: scale(1.02) !important;
+}
+</style>
 </head>
 
 <body class="min-h-screen-safe bg-background font-overpass antialiased __variable_68a839">
