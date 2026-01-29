@@ -1,0 +1,41 @@
+/* Homepage Coming Soon CTA Disabler Styles */
+
+.cs-disabled {
+    position: relative;
+    opacity: 0.55 !important;
+    filter: blur(0.4px);
+    cursor: not-allowed !important;
+    transition: all 0.2s ease;
+}
+
+.cs-disabled:hover {
+    opacity: 0.55 !important;
+    transform: none !important;
+}
+
+.cs-soon {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.75;
+    color: hsl(var(--muted-foreground));
+    text-align: center;
+    animation: cs-fade-in 0.3s ease-in;
+}
+
+@keyframes cs-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 0.75;
+        transform: translateY(0);
+    }
+}
+
+/* Ensure disabled state for nested elements */
+.cs-disabled * {
+    pointer-events: none !important;
+}
