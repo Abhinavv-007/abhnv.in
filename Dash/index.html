@@ -128,7 +128,7 @@
             const [userProfile, setUserProfile] = useState(() => {
                 const saved = localStorage.getItem('dash_user_profile');
                 if (saved) return JSON.parse(saved);
-                return { name: "", role: "", email: "", location: "" };
+                return { name: "Abhinav Raj", role: "Vibe Coder", email: "abhinav@lnch.in", location: "India" };
             });
 
             // Profile Modal State
@@ -173,6 +173,7 @@
             ]);
 
             const [sectionsOpen, setSectionsOpen] = useState({ unplanned: true, todos: true, scheduled: true, done: false });
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             const [time, setTime] = useState(new Date());
 
             useEffect(() => {
@@ -416,22 +417,22 @@
                     <div className="w-full max-w-[1250px] h-[900px] rounded-[40px] flex overflow-hidden relative transition-all duration-500 border" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)', boxShadow: '20px 20px 60px var(--shadow-outer-dark), -20px -20px 60px var(--shadow-outer-light)' }}>
 
                         {/* --- SIDEBAR --- */}
-                        <div className="w-[88px] flex flex-col items-center py-8 gap-8 border-r z-10 shrink-0 transition-colors duration-500" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
-                            <div className="w-12 h-12 bg-[#1b212f] text-white rounded-[14px] flex items-center justify-center mb-2 shadow-lg cursor-pointer hover:scale-105 transition-transform" onClick={() => setActiveTab('chat')}>
+                        <div className={`flex flex-col items-center py-8 gap-8 border-r z-10 shrink-0 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${isSidebarOpen ? 'w-[240px] px-6 items-start' : 'w-[88px] px-0 items-center'}`} style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)' }}>
+                            <div className="w-12 h-12 bg-[#1b212f] text-white rounded-[14px] flex items-center justify-center mb-2 shadow-lg cursor-pointer hover:scale-105 transition-transform" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                                 <LayoutDashboard size={22} strokeWidth={1.5} />
                             </div>
 
-                            <div className="flex flex-col gap-6 w-full items-center">
+                            <div className={`flex flex-col gap-6 w-full ${isSidebarOpen ? 'items-start' : 'items-center'}`}>
                                 {/* Notifications mapped to Bell with dynamic badge */}
-                                <SidebarIcon icon={<Bell size={22} strokeWidth={1.5} />} id="notifications" active={activeTab} set={setActiveTab} badge={todos.some(t => t.section !== 'done' && t.dueDate && !t.dismissedAlert)} />
-                                <SidebarIcon icon={<Building2 size={22} strokeWidth={1.5} />} id="organization" active={activeTab} set={setActiveTab} />
-                                <SidebarIcon icon={<User size={22} strokeWidth={1.5} />} id="profile" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<Bell size={22} strokeWidth={1.5} />} label="Notifications" isExpanded={isSidebarOpen} id="notifications" active={activeTab} set={setActiveTab} badge={todos.some(t => t.section !== 'done' && t.dueDate && !t.dismissedAlert)} />
+                                <SidebarIcon icon={<Building2 size={22} strokeWidth={1.5} />} label="Organization" isExpanded={isSidebarOpen} id="organization" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<User size={22} strokeWidth={1.5} />} label="My Profile" isExpanded={isSidebarOpen} id="profile" active={activeTab} set={setActiveTab} />
 
-                                <SidebarIcon icon={<MessageCircle size={22} strokeWidth={1.5} />} id="chat" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<MessageCircle size={22} strokeWidth={1.5} />} label="AI Chat" isExpanded={isSidebarOpen} id="chat" active={activeTab} set={setActiveTab} />
 
-                                <SidebarIcon icon={<ListTodo size={22} strokeWidth={1.5} />} id="tasks" active={activeTab} set={setActiveTab} />
-                                <SidebarIcon icon={<Folder size={22} strokeWidth={1.5} />} id="folders" active={activeTab} set={setActiveTab} />
-                                <SidebarIcon icon={<Settings size={22} strokeWidth={1.5} />} id="settings" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<ListTodo size={22} strokeWidth={1.5} />} label="Tasks" isExpanded={isSidebarOpen} id="tasks" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<Folder size={22} strokeWidth={1.5} />} label="Folders" isExpanded={isSidebarOpen} id="folders" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<Settings size={22} strokeWidth={1.5} />} label="Settings" isExpanded={isSidebarOpen} id="settings" active={activeTab} set={setActiveTab} />
                             </div>
                         </div>
 
@@ -992,15 +993,16 @@
             );
         };
 
-        const SidebarIcon = ({ icon, id, active, set, badge }) => {
+        const SidebarIcon = ({ icon, label, isExpanded, id, active, set, badge }) => {
             const isActive = active === id;
             return (
-                <div className="relative flex justify-center items-center w-full">
+                <div className={`relative flex items-center w-full ${isExpanded ? 'justify-start mt-1' : 'justify-center'}`}>
                     <div className={`absolute left-0 w-1 h-8 bg-slate-400 rounded-r-full transition-opacity ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
-                    <button onClick={() => set(id)} className={`relative transition-all duration-300 p-3 rounded-2xl border ${isActive ? 'shadow-inner' : 'hover:scale-105 border-transparent'}`}
+                    <button onClick={() => set(id)} className={`relative flex items-center gap-4 transition-all duration-300 rounded-2xl border ${isExpanded ? 'p-3 w-full' : 'p-3'} ${isActive ? 'shadow-inner' : 'hover:scale-105 border-transparent'}`}
                         style={isActive ? { backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)', color: 'var(--text-main)', boxShadow: 'inset 3px 3px 6px var(--shadow-inner-dark), inset -3px -3px 6px var(--shadow-inner-light)' } : { color: 'var(--text-muted)' }}>
-                        {icon}
-                        {badge && <div className="absolute top-2 right-2 w-2 h-2 bg-[#f46b6b] rounded-full border-2 border-transparent z-10"></div>}
+                        <div className="shrink-0">{icon}</div>
+                        {isExpanded && <span className="font-semibold text-[15px] whitespace-nowrap animate-in fade-in slide-in-from-left-2">{label}</span>}
+                        {badge && <div className={`absolute ${isExpanded ? 'top-3 right-3' : 'top-2 right-2'} w-2 h-2 bg-[#f46b6b] rounded-full border-2 border-transparent z-10`}></div>}
                     </button>
                 </div>
             );
