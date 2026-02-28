@@ -110,6 +110,7 @@
         const Sparkles = (p) => <Icon name="auto_awesome" {...p} />;
         const Loader2 = (p) => <Icon name="autorenew" {...p} className={`animate-spin ${p.className || ''}`} />;
         const Key = (p) => <Icon name="key" {...p} />;
+        const Home = (p) => <Icon name="home" {...p} />;
 
         // ASMR Icons
         const CloudRain = (p) => <Icon name="rainy" {...p} />;
@@ -409,7 +410,7 @@
             const renderMainContent = () => {
                 const props = { todos, isDarkMode, themeStyles, toggleTodoComplete, deleteTodo, togglePriority, updateTodo };
                 switch (activeTab) {
-                    case 'chat': return <DashboardView activePlannerTab={activePlannerTab} setActivePlannerTab={setActivePlannerTab} unplannedTodos={unplannedTodos} plannedTodos={plannedTodos} scheduledTodos={scheduledTodos} doneTodos={doneTodos} sectionsOpen={sectionsOpen} toggleSection={toggleSection} handleAddTodo={handleAddTodo} toggleTodoComplete={toggleTodoComplete} updateTodo={updateTodo} deleteTodo={deleteTodo} togglePriority={togglePriority} clearDone={clearDone} time={time} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handlePrioritizeTasks={handlePrioritizeTasks} isPrioritizing={isPrioritizing} handleBreakdownTask={handleBreakdownTask} breakingDownId={breakingDownId} userApiKey={userApiKey} setShowApiKeyModal={setShowApiKeyModal} />;
+                    case 'dashboard': return <DashboardView activePlannerTab={activePlannerTab} setActivePlannerTab={setActivePlannerTab} unplannedTodos={unplannedTodos} plannedTodos={plannedTodos} scheduledTodos={scheduledTodos} doneTodos={doneTodos} sectionsOpen={sectionsOpen} toggleSection={toggleSection} handleAddTodo={handleAddTodo} toggleTodoComplete={toggleTodoComplete} updateTodo={updateTodo} deleteTodo={deleteTodo} togglePriority={togglePriority} clearDone={clearDone} time={time} searchQuery={searchQuery} setSearchQuery={setSearchQuery} handlePrioritizeTasks={handlePrioritizeTasks} isPrioritizing={isPrioritizing} handleBreakdownTask={handleBreakdownTask} breakingDownId={breakingDownId} userApiKey={userApiKey} setShowApiKeyModal={setShowApiKeyModal} />;
                     case 'notifications': return <NotificationsView {...props} dismissNotification={dismissNotification} />;
                     case 'tasks': return <TasksMasterView {...props} handleAutoSchedule={handleAutoSchedule} isAutoScheduling={isAutoScheduling} userApiKey={userApiKey} setShowApiKeyModal={setShowApiKeyModal} />;
                     case 'profile': return <ProfileView userProfile={userProfile} todos={todos} />;
@@ -498,7 +499,7 @@
                                 <SidebarIcon icon={<Building2 size={22} strokeWidth={1.5} />} label="Organization" isExpanded={isSidebarOpen} id="organization" active={activeTab} set={setActiveTab} />
                                 <SidebarIcon icon={<User size={22} strokeWidth={1.5} />} label="My Profile" isExpanded={isSidebarOpen} id="profile" active={activeTab} set={setActiveTab} />
 
-                                <SidebarIcon icon={<MessageCircle size={22} strokeWidth={1.5} />} label="AI Chat" isExpanded={isSidebarOpen} id="chat" active={activeTab} set={setActiveTab} />
+                                <SidebarIcon icon={<Home size={22} strokeWidth={1.5} />} label="Dashboard" isExpanded={isSidebarOpen} id="dashboard" active={activeTab} set={setActiveTab} />
 
                                 <SidebarIcon icon={<ListTodo size={22} strokeWidth={1.5} />} label="Tasks" isExpanded={isSidebarOpen} id="tasks" active={activeTab} set={setActiveTab} />
                                 <SidebarIcon icon={<Folder size={22} strokeWidth={1.5} />} label="Folders" isExpanded={isSidebarOpen} id="folders" active={activeTab} set={setActiveTab} />
