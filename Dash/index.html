@@ -121,16 +121,38 @@
             const [searchQuery, setSearchQuery] = useState("");
 
             // Gemini API Key State
-            const [userApiKey, setUserApiKey] = useState("");
-            const [showApiKeyModal, setShowApiKeyModal] = useState(true);
+            const [userApiKey, setUserApiKey] = useState(() => localStorage.getItem('dash_api_key') || "");
+            const [showApiKeyModal, setShowApiKeyModal] = useState(() => !localStorage.getItem('dash_api_key_skipped') && !localStorage.getItem('dash_api_key'));
 
-            // Simulated Fetched User Data
-            const [userProfile, setUserProfile] = useState({
-                name: "Alex Carter",
-                role: "Lead Product Designer",
-                email: "alex@company.com",
-                location: "New York, USA",
+            // User Profile State
+            const [userProfile, setUserProfile] = useState(() => {
+                const saved = localStorage.getItem('dash_user_profile');
+                if (saved) return JSON.parse(saved);
+                return { name: "", role: "", email: "", location: "" };
             });
+
+            // Profile Modal State
+            const [showProfileModal, setShowProfileModal] = useState(() => !localStorage.getItem('dash_user_profile'));
+            const [profileForm, setProfileForm] = useState(userProfile);
+
+            const handleSaveProfile = () => {
+                if (!profileForm.name.trim()) return;
+                setUserProfile(profileForm);
+                localStorage.setItem('dash_user_profile', JSON.stringify(profileForm));
+                setShowProfileModal(false);
+            };
+
+            const handleSaveApiKey = () => {
+                if (userApiKey.trim()) {
+                    localStorage.setItem('dash_api_key', userApiKey);
+                }
+                setShowApiKeyModal(false);
+            };
+
+            const handleSkipApiKey = () => {
+                localStorage.setItem('dash_api_key_skipped', 'true');
+                setShowApiKeyModal(false);
+            };
 
             // Dynamic Content States
             const [organizations, setOrganizations] = useState(['Design Team', 'Engineering', 'Marketing', 'Executive']);
@@ -332,7 +354,7 @@
                 <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-blue-200 transition-colors duration-500 relative" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-main)', ...themeStyles }}>
 
                     {/* API Key Modal */}
-                    {showApiKeyModal && (
+                    {showApiKeyModal && !showProfileModal && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 transition-all">
                             <div className="w-full max-w-md p-8 rounded-[32px] shadow-2xl border flex flex-col gap-4 animate-in fade-in zoom-in-95" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)', boxShadow: '12px 12px 24px rgba(0,0,0,0.2)' }}>
                                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner mb-2" style={{ backgroundColor: 'var(--bg-inset)', color: 'var(--text-main)', boxShadow: 'inset 3px 3px 6px var(--shadow-inner-dark), inset -3px -3px 6px var(--shadow-inner-light)' }}>
@@ -347,9 +369,45 @@
                                 </div>
 
                                 <div className="flex gap-3 mt-4">
-                                    <button onClick={() => setShowApiKeyModal(false)} className="flex-1 py-3 rounded-2xl font-bold text-[15px] border hover:opacity-80 transition-opacity" style={{ backgroundColor: 'transparent', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>Skip for now</button>
-                                    <button onClick={() => setShowApiKeyModal(false)} className="flex-1 py-3 rounded-2xl font-bold text-[15px] shadow-md hover:scale-[1.02] transition-transform" style={{ backgroundColor: 'var(--text-main)', color: 'var(--bg-base)' }}>Save Key</button>
+                                    <button onClick={handleSkipApiKey} className="flex-1 py-3 rounded-2xl font-bold text-[15px] border hover:opacity-80 transition-opacity" style={{ backgroundColor: 'transparent', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>Skip for now</button>
+                                    <button onClick={handleSaveApiKey} className="flex-1 py-3 rounded-2xl font-bold text-[15px] shadow-md hover:scale-[1.02] transition-transform" style={{ backgroundColor: 'var(--text-main)', color: 'var(--bg-base)' }}>Save Key</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Profile Setup Modal */}
+                    {showProfileModal && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 transition-all">
+                            <div className="w-full max-w-md p-8 rounded-[32px] shadow-2xl border flex flex-col gap-4 animate-in fade-in zoom-in-95" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-color)', boxShadow: '12px 12px 24px rgba(0,0,0,0.5)' }}>
+                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner mb-2" style={{ backgroundColor: 'var(--bg-inset)', color: 'var(--text-main)', boxShadow: 'inset 3px 3px 6px var(--shadow-inner-dark), inset -3px -3px 6px var(--shadow-inner-light)' }}>
+                                    <User size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>Welcome to Dash</h2>
+                                    <p className="font-medium text-[14px] mt-1" style={{ color: 'var(--text-muted)' }}>Set up your profile to personalize your dashboard.</p>
+                                </div>
+
+                                <div className="flex flex-col gap-3 mt-4">
+                                    <div className="flex items-center gap-3 p-3 rounded-xl shadow-inner border" style={{ backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)', boxShadow: 'inset 2px 2px 5px var(--shadow-inner-dark), inset -2px -2px 5px var(--shadow-inner-light)' }}>
+                                        <User size={18} style={{ color: 'var(--text-muted)' }} />
+                                        <input type="text" placeholder="Your Name" value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} className="bg-transparent border-none outline-none flex-1 font-medium text-[15px]" style={{ color: 'var(--text-main)' }} />
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl shadow-inner border" style={{ backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)', boxShadow: 'inset 2px 2px 5px var(--shadow-inner-dark), inset -2px -2px 5px var(--shadow-inner-light)' }}>
+                                        <Building2 size={18} style={{ color: 'var(--text-muted)' }} />
+                                        <input type="text" placeholder="Your Role (e.g. Designer, Engineer)" value={profileForm.role} onChange={(e) => setProfileForm({ ...profileForm, role: e.target.value })} className="bg-transparent border-none outline-none flex-1 font-medium text-[15px]" style={{ color: 'var(--text-main)' }} />
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl shadow-inner border" style={{ backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)', boxShadow: 'inset 2px 2px 5px var(--shadow-inner-dark), inset -2px -2px 5px var(--shadow-inner-light)' }}>
+                                        <Mail size={18} style={{ color: 'var(--text-muted)' }} />
+                                        <input type="email" placeholder="Email Address" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} className="bg-transparent border-none outline-none flex-1 font-medium text-[15px]" style={{ color: 'var(--text-main)' }} />
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl shadow-inner border" style={{ backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)', boxShadow: 'inset 2px 2px 5px var(--shadow-inner-dark), inset -2px -2px 5px var(--shadow-inner-light)' }}>
+                                        <MapPin size={18} style={{ color: 'var(--text-muted)' }} />
+                                        <input type="text" placeholder="Location (e.g. New York, USA)" value={profileForm.location} onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })} className="bg-transparent border-none outline-none flex-1 font-medium text-[15px]" style={{ color: 'var(--text-main)' }} />
+                                    </div>
+                                </div>
+
+                                <button onClick={handleSaveProfile} disabled={!profileForm.name?.trim()} className="w-full mt-2 py-3 rounded-xl font-bold text-[15px] shadow-md hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed" style={{ backgroundColor: 'var(--text-main)', color: 'var(--bg-base)' }}>Get Started</button>
                             </div>
                         </div>
                     )}
