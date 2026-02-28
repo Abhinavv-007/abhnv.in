@@ -111,6 +111,17 @@
         const Loader2 = (p) => <Icon name="autorenew" {...p} className={`animate-spin ${p.className || ''}`} />;
         const Key = (p) => <Icon name="key" {...p} />;
 
+        // ASMR Icons
+        const CloudRain = (p) => <Icon name="rainy" {...p} />;
+        const BookOpen = (p) => <Icon name="menu_book" {...p} />;
+        const PenTool = (p) => <Icon name="edit" {...p} />;
+        const Flame = (p) => <Icon name="local_fire_department" {...p} />;
+        const Keyboard = (p) => <Icon name="keyboard" {...p} />;
+        const Volume2 = (p) => <Icon name="volume_up" {...p} />;
+        const VolumeX = (p) => <Icon name="volume_off" {...p} />;
+        const Play = (p) => <Icon name="play_arrow" {...p} />;
+        const Pause = (p) => <Icon name="pause" {...p} />;
+        const Music = (p) => <Icon name="music_note" {...p} />;
 
         // --- MAIN APP COMPONENT ---
         function App() {
@@ -180,6 +191,65 @@
                 const timer = setInterval(() => setTime(new Date()), 1000);
                 return () => clearInterval(timer);
             }, []);
+
+            // --- ASMR AUDIO STATE & LOGIC ---
+            const [asmrState, setAsmrState] = useState({
+                isPlaying: false,
+                masterVolume: 0.5,
+                tracks: {
+                    rain: { active: false, volume: 1.0, src: 'assets/rain.mp3', label: "Rainy Weather", icon: <CloudRain size={20} /> },
+                    sunny: { active: false, volume: 1.0, src: 'assets/sunny.mp3', label: "Sunny Weather", icon: <Sun size={20} /> },
+                    pages: { active: false, volume: 1.0, src: 'assets/pages.mp3', label: "Turning Pages", icon: <BookOpen size={20} /> },
+                    ipad: { active: false, volume: 1.0, src: 'assets/ipad.mp3', label: "Writing on iPad", icon: <PenTool size={20} /> },
+                    fireplace: { active: false, volume: 1.0, src: 'assets/fireplace.mp3', label: "Fireplace Crackling", icon: <Flame size={20} /> },
+                    typing: { active: false, volume: 1.0, src: 'assets/typing.mp3', label: "Typing on Keyboard", icon: <Keyboard size={20} /> }
+                }
+            });
+
+            const audioRefs = useRef({});
+
+            useEffect(() => {
+                Object.entries(asmrState.tracks).forEach(([key, track]) => {
+                    if (!audioRefs.current[key]) {
+                        const audio = new Audio(track.src);
+                        audio.loop = true;
+                        audio.volume = track.volume * asmrState.masterVolume;
+                        audioRefs.current[key] = audio;
+                    }
+                });
+            }, []);
+
+            useEffect(() => {
+                Object.entries(asmrState.tracks).forEach(([key, track]) => {
+                    const audio = audioRefs.current[key];
+                    if (audio) {
+                        audio.volume = track.volume * asmrState.masterVolume;
+                        if (track.active && asmrState.isPlaying) {
+                            audio.play().catch(e => console.log("Audio play blocked", e));
+                        } else {
+                            audio.pause();
+                        }
+                    }
+                });
+            }, [asmrState]);
+
+            const toggleAsmrTrack = (key) => {
+                setAsmrState(prev => {
+                    const newTracks = { ...prev.tracks, [key]: { ...prev.tracks[key], active: !prev.tracks[key].active } };
+                    const newlyActive = !prev.tracks[key].active;
+                    let newIsPlaying = prev.isPlaying;
+
+                    if (newlyActive && !prev.isPlaying) newIsPlaying = true;
+
+                    const anyActive = Object.values(newTracks).some(t => t.active);
+                    if (!anyActive) newIsPlaying = false;
+
+                    return { ...prev, tracks: newTracks, isPlaying: newIsPlaying };
+                });
+            };
+
+            const toggleAsmrPlay = () => setAsmrState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+            const handleAsmrVolume = (e) => setAsmrState(prev => ({ ...prev, masterVolume: parseFloat(e.target.value) }));
 
             // --- GEMINI API INTEGRATION ---
             const callGemini = async (prompt, schema) => {
@@ -437,8 +507,41 @@
                         </div>
 
                         {/* --- MAIN CONTENT AREA --- */}
-                        <div className="flex-1 flex overflow-hidden relative">
-                            {renderMainContent()}
+                        <div className="flex-1 flex flex-col overflow-hidden relative">
+                            {/* ASMR TOP BAR */}
+                            <div className="w-full h-20 border-b flex items-center justify-between px-8 shrink-0 relative transition-all duration-500 z-10 animate-in fade-in slide-in-from-top-4" style={{ backgroundColor: 'var(--bg-inset)', borderColor: 'var(--border-color)' }}>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner" style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-main)', boxShadow: 'inset 2px 2px 5px var(--shadow-inner-dark), inset -2px -2px 5px var(--shadow-inner-light)' }}>
+                                        <Music size={20} />
+                                    </div>
+                                    <span className="font-bold text-[16px] tracking-tight" style={{ color: 'var(--text-main)' }}>ASMR</span>
+                                </div>
+
+                                <div className="flex items-center justify-center gap-3 md:gap-4 flex-1">
+                                    {Object.entries(asmrState.tracks).map(([key, track]) => (
+                                        <button key={key} onClick={() => toggleAsmrTrack(key)} title={track.label}
+                                            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${track.active ? 'shadow-inner border-transparent scale-95' : 'border hover:scale-105 shadow-sm'}`}
+                                            style={track.active ? { backgroundColor: 'var(--bg-surface)', color: 'var(--text-main)', boxShadow: 'inset 3px 3px 6px var(--shadow-inner-dark), inset -3px -3px 6px var(--shadow-inner-light)' } : { borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
+                                            {track.icon}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3">
+                                        <Volume2 size={18} style={{ color: 'var(--text-muted)' }} />
+                                        <input type="range" min="0" max="1" step="0.05" value={asmrState.masterVolume} onChange={handleAsmrVolume} className="w-24 accent-slate-500 cursor-pointer opacity-70 hover:opacity-100 transition-opacity" />
+                                    </div>
+
+                                    <button onClick={toggleAsmrPlay} disabled={!Object.values(asmrState.tracks).some(t => t.active)} className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 border shadow-md hover:scale-[1.05] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed`} style={{ backgroundColor: 'var(--text-main)', borderColor: 'var(--border-color)', color: 'var(--bg-base)', boxShadow: '4px 4px 8px var(--shadow-outer-dark), -4px -4px 8px var(--shadow-outer-light)' }}>
+                                        {asmrState.isPlaying ? <Pause size={22} fill={true} /> : <Play size={22} fill={true} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 flex overflow-hidden relative">
+                                {renderMainContent()}
+                            </div>
                         </div>
 
                     </div>
