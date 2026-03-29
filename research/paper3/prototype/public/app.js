@@ -8,9 +8,10 @@
 // STATE
 // ============================================
 const state = {
-    electionId: '00000000-0000-0000-0000-000000000000',
+    electionId: 'e0000000-0000-0000-0000-000000000001',
     election: null,
     ballots: [],
+    candidates: [],
     selectedCandidate: null,
     mode: 'safe',
     lastReceipt: null,
@@ -187,11 +188,6 @@ async function initApp() {
 }
 
 function setupEventListeners() {
-    // Candidate selection
-    $$('.candidate-btn').forEach(btn => {
-        btn.addEventListener('click', () => selectCandidate(btn.dataset.candidate));
-    });
-
     // Cast vote
     $('#cast-vote-btn').addEventListener('click', castVote);
     $('#copy-receipt-btn')?.addEventListener('click', copyReceipt);
@@ -233,7 +229,9 @@ async function fetchBoard() {
             state.election = data.election;
             state.electionId = data.election.id;
             state.ballots = data.ballots;
+            state.candidates = data.candidates || [];
             state.mode = data.election.mode || 'safe';
+            renderCandidates();
             renderBoard();
             updateElectionStatus();
         }
@@ -275,6 +273,14 @@ async function castVote() {
         if (state.mode === 'demo') {
             body.choice = state.selectedCandidate;
             body.nonce = nonce;
+            const ageEl = $('#voter-age');
+            const stateEl = $('#voter-state');
+            const genderEl = $('#voter-gender');
+            const partyEl = $('#voter-party');
+            if (ageEl) body.voter_age_group = ageEl.value;
+            if (stateEl) body.voter_state = stateEl.value;
+            if (genderEl) body.voter_gender = genderEl.value;
+            if (partyEl) body.voter_party = partyEl.value;
         }
 
         const res = await apiCall('/api/cast', {
@@ -332,9 +338,9 @@ async function verifyReceipt() {
             resultDiv.className = 'bg-green-500/10 border border-green-500/30 rounded-lg p-6';
             resultDiv.innerHTML = `
         <div class="flex items-center gap-3 text-green-400 text-lg font-serif mb-4">
-          <span>Receipt Verified - Your vote is recorded!</span>
+          <span>Receipt Verified - Your vote is securely recorded!</span>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
+        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
           <div class="bg-black/30 p-3 rounded">
             <div class="text-paper-muted text-xs uppercase mb-1">Ballot Index</div>
             <div class="text-brand-glow font-mono">#${data.ballot.index}</div>
@@ -344,10 +350,23 @@ async function verifyReceipt() {
             <div class="text-paper-text font-mono text-xs">${new Date(data.ballot.cast_at).toLocaleString()}</div>
           </div>
           <div class="bg-black/30 p-3 rounded col-span-2">
-            <div class="text-paper-muted text-xs uppercase mb-1">Chain Hash</div>
-            <div class="text-brand-glow font-mono text-xs break-all">${data.ballot.chain_hash}</div>
+            <div class="text-paper-muted text-xs uppercase mb-1">Cryptographic Chain Hash</div>
+            <div class="text-brand-glow font-mono text-[10px] break-all">${data.ballot.chain_hash}</div>
           </div>
         </div>
+        ${data.ballot.choice ? `
+        <div class="bg-blue-900/10 border border-brand-blue/30 p-4 rounded-lg mt-4 animate-fade-in-up">
+            <div class="text-brand-glow text-xs uppercase mb-3 font-semibold tracking-widest text-center">Demo Mode Reveal: Verified Payload</div>
+            <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-paper-muted">Choice:</span> <span class="text-white">${state.candidates.find(c => c.id === data.ballot.choice)?.name || data.ballot.choice}</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-paper-muted">Age:</span> <span class="text-white">${data.ballot.voter_age_group}</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-paper-muted">State:</span> <span class="text-white">${data.ballot.voter_state}</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-paper-muted">Gender:</span> <span class="text-white">${data.ballot.voter_gender}</span></div>
+                <div class="flex justify-between border-b border-white/5 pb-1 col-span-2"><span class="text-paper-muted">Identity:</span> <span class="text-white">${data.ballot.voter_party}</span></div>
+            </div>
+            <div class="mt-4 text-[10px] text-paper-muted text-center italic">* In production (Safe Mode) these fields remain fully encrypted.</div>
+        </div>
+        ` : ''}
       `;
 
             highlightBallotRow(data.ballot.index);
@@ -474,7 +493,19 @@ async function closeElection() {
 
         if (data.ok) {
             await fetchBoard();
-            if (data.tally_proof) showTallyResults(data.tally_proof);
+            
+            if (state.mode === 'demo') {
+                try {
+                    const tallyRes = await apiCall(`/api/tally?election_id=${state.electionId}`);
+                    const tallyData = await tallyRes.json();
+                    if (tallyData.ok && tallyData.tally_proof) {
+                        showTallyResults(tallyData.tally_proof);
+                    }
+                } catch (e) { console.error('Tally fetch failed', e); }
+            } else if (data.tally_proof) {
+                 showTallyResults(data.tally_proof);
+            }
+            
             alert('Election closed!');
         } else {
             alert('Failed: ' + data.error);
@@ -583,10 +614,15 @@ function renderBoard() {
           ${isUser ? '<span class="ml-2 px-1.5 py-0.5 bg-brand-blue text-white rounded text-[9px] font-bold tracking-widest">YOU</span>' : ''}
         </td>
         <td class="px-6 py-3 text-paper-muted flex items-center gap-1">
-          ${isUser && !state.verifiedBallots.has(ballot.index) ?
-                `<span class="text-yellow-500/80 text-[10px] uppercase tracking-wide">Voted (Verification Pending)</span>` :
-                `<svg class="text-green-500" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg> Verified`
-            }
+          ${(() => {
+              if (isUser) {
+                  return state.verifiedBallots.has(ballot.index) ? 
+                      `<svg class="text-green-500" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg> <span class="text-green-400 font-medium">Verified by You</span>` : 
+                      `<span class="text-yellow-500/80 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 border border-yellow-500/50 rounded animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.3)]">Action Required: Verify Receipt</span>`;
+              } else {
+                  return `<svg class="text-brand-glow/50" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg> <span class="opacity-60 text-xs tracking-wider">SEALED IN CHAIN</span>`;
+              }
+          })()}
         </td>
       </tr>
     `;
@@ -626,34 +662,117 @@ function toggleDemoMode() {
 
     state.mode = toggle.checked ? 'demo' : 'safe';
     warning.classList.toggle('hidden', !toggle.checked);
+
+    const profileSection = $('#voter-profile-section');
+    if (profileSection) {
+        profileSection.classList.toggle('hidden', !toggle.checked);
+    }
 }
 
 function showTallyResults(tallyProof) {
     const div = $('#tally-results');
     div.classList.remove('hidden');
 
-    div.innerHTML = `
+    let html = `
     <div class="text-center mb-8">
       <h3 class="text-2xl font-serif text-white mb-2">🗳️ Election Results</h3>
       <p class="text-paper-muted text-sm">Demo mode - votes revealed for verification</p>
     </div>
     <div class="grid grid-cols-2 gap-8 mb-8">
-      <div class="text-center p-6 bg-black/30 rounded-lg">
-        <div class="text-5xl font-serif font-bold text-brand-glow">${tallyProof.tally.A}</div>
-        <div class="text-lg mt-2">Candidate Alpha</div>
-      </div>
-      <div class="text-center p-6 bg-black/30 rounded-lg">
-        <div class="text-5xl font-serif font-bold text-brand-glow">${tallyProof.tally.B}</div>
-        <div class="text-lg mt-2">Candidate Beta</div>
-      </div>
+    `;
+
+    for (const [candId, votes] of Object.entries(tallyProof.tally)) {
+        const cand = state.candidates?.find(c => c.id === candId) || { name: candId };
+        html += `
+        <div class="text-center p-6 bg-black/30 rounded-lg">
+            <div class="text-5xl font-serif font-bold text-brand-glow">${votes}</div>
+            <div class="text-lg mt-2">${cand.name}</div>
+        </div>
+        `;
+    }
+
+    html += `
     </div>
-    <div class="flex items-center justify-center gap-2 text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+    <div class="flex items-center justify-center gap-2 text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
       <span>✓</span>
       <span>All ${tallyProof.total_revealed} votes cryptographically verified</span>
     </div>
-  `;
+    `;
 
+    html += `
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+    `;
+
+    if (tallyProof.state_breakdown && Object.keys(tallyProof.state_breakdown).length > 0) {
+        html += `
+        <div class="bg-black/40 p-6 rounded-2xl border border-white/5 text-left text-xs text-paper-muted font-mono overflow-auto">
+            <h4 class="font-serif text-brand-glow mb-4 uppercase tracking-widest">State Breakdown</h4>
+            <pre>${JSON.stringify(tallyProof.state_breakdown, null, 2)}</pre>
+        </div>
+        `;
+    }
+    
+    if (tallyProof.age_breakdown && Object.keys(tallyProof.age_breakdown).length > 0) {
+        html += `
+        <div class="bg-black/40 p-6 rounded-2xl border border-white/5 text-left text-xs text-paper-muted font-mono overflow-auto">
+            <h4 class="font-serif text-brand-glow mb-4 uppercase tracking-widest">Age Breakdown</h4>
+            <pre>${JSON.stringify(tallyProof.age_breakdown, null, 2)}</pre>
+        </div>
+        `;
+    }
+
+    if (tallyProof.gender_breakdown && Object.keys(tallyProof.gender_breakdown).length > 0) {
+        html += `
+        <div class="bg-black/40 p-6 rounded-2xl border border-white/5 text-left text-xs text-paper-muted font-mono overflow-auto">
+            <h4 class="font-serif text-brand-glow mb-4 uppercase tracking-widest">Gender Breakdown</h4>
+            <pre>${JSON.stringify(tallyProof.gender_breakdown, null, 2)}</pre>
+        </div>
+        `;
+    }
+
+    if (tallyProof.party_breakdown && Object.keys(tallyProof.party_breakdown).length > 0) {
+        html += `
+        <div class="bg-black/40 p-6 rounded-2xl border border-white/5 text-left text-xs text-paper-muted font-mono overflow-auto">
+            <h4 class="font-serif text-brand-glow mb-4 uppercase tracking-widest">Voter Identity</h4>
+            <pre>${JSON.stringify(tallyProof.party_breakdown, null, 2)}</pre>
+        </div>
+        `;
+    }
+
+    html += `</div>`;
+
+    div.innerHTML = html;
     div.scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderCandidates() {
+    const list = $('#candidates-list');
+    if (!state.candidates || state.candidates.length === 0 || !list) {
+        return;
+    }
+    
+    // Only render if needed
+    if (list.querySelector('.candidate-btn') && !list.innerHTML.includes('Loading')) {
+        return; 
+    }
+
+    list.innerHTML = state.candidates.map(c => `
+        <button data-candidate="${c.id}"
+            class="candidate-btn group w-full p-6 text-left border border-white/5 rounded-2xl transition-all font-sans text-xl flex justify-between items-center bg-black/20 hover:bg-brand-blue/5 hover:border-brand-blue/40 relative overflow-hidden">
+            <span class="group-hover:text-brand-glow transition-colors font-medium relative z-10">${c.name}</span>
+            <div class="w-6 h-6 rounded-full border-2 border-paper-muted candidate-radio transition-all shadow-inner relative z-10 group-hover:border-brand-blue group-hover:shadow-[0_0_10px_rgba(37,99,235,0.3)]"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-blue/0 to-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        </button>
+    `).join('');
+
+    // Rebind events
+    $$('.candidate-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectCandidate(btn.dataset.candidate));
+    });
+
+    if (state.selectedCandidate) {
+        selectCandidate(state.selectedCandidate);
+    }
 }
 
 // ============================================
