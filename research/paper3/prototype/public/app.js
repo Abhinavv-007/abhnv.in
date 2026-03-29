@@ -36,6 +36,11 @@ const MockServer = {
             chain_head: 'GENESIS',
             mode: 'demo'
         },
+        candidates: [
+            { id: 'CAND-A', name: 'Progressive India Alliance' },
+            { id: 'CAND-B', name: 'National Democratic Front' },
+            { id: 'CAND-C', name: 'Independent Voice' }
+        ],
         ballots: []
     },
 
@@ -55,7 +60,7 @@ const MockServer = {
 
         // GET /api/board
         if (url.includes('/api/board') && method === 'GET') {
-            return { ok: true, election: this.db.election, ballots: this.db.ballots };
+            return { ok: true, election: this.db.election, candidates: this.db.candidates, ballots: this.db.ballots };
         }
 
         // POST /api/cast
@@ -608,7 +613,7 @@ function renderBoard() {
         const isUser = state.lastReceipt && ballot.index === state.lastReceipt.index;
         return `
       <tr data-index="${ballot.index}" class="${isUser ? 'bg-brand-blue/10' : 'hover:bg-white/5'} transition-colors">
-        <td class="px-6 py-3 text-paper-muted">${new Date(ballot.cast_at).toLocaleTimeString('en-US', { hour12: false })}</td>
+        <td class="px-6 py-3 text-paper-muted">${new Date(ballot.cast_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</td>
         <td class="px-6 py-3 text-paper-text">
           ${ballot.commit.substring(0, 8)}...
           ${isUser ? '<span class="ml-2 px-1.5 py-0.5 bg-brand-blue text-white rounded text-[9px] font-bold tracking-widest">YOU</span>' : ''}
