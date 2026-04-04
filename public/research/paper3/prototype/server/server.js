@@ -17,7 +17,9 @@ import {
     appendReveal,
     readReveals,
     writeTallyProof,
-    readTallyProof
+    readTallyProof,
+    getElectionCandidates,
+    resolveElectionContext
 } from './storage.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,6 +32,18 @@ app.use(express.static(join(__dirname, '..', 'public')));
 
 // Initialize storage on startup
 initStorage();
+
+function matchesElectionAlias(recordElectionId, aliases) {
+    return aliases.includes(recordElectionId);
+}
+
+function mapChoiceToCandidateId(choice, candidates) {
+    if (!choice) return null;
+    if (candidates.some((candidate) => candidate.id === choice)) return choice;
+
+    const legacyIndex = { A: 0, B: 1, C: 2 }[choice];
+    return Number.isInteger(legacyIndex) ? candidates[legacyIndex]?.id || null : null;
+}
 
 /**
  * POST /api/cast
@@ -45,7 +59,8 @@ app.post('/api/cast', async (req, res) => {
 
         const result = await withLock(async () => {
             const elections = readElections();
-            const election = elections.elections[election_id];
+            const electionContext = resolveElectionContext(elections, election_id);
+            const election = electionContext?.election;
 
             if (!election) {
                 return { ok: false, error: 'Election not found' };
@@ -56,7 +71,7 @@ app.post('/api/cast', async (req, res) => {
             }
 
             // Check for duplicate receipt_hash
-            const existingBallots = readBallots().filter(b => b.election_id === election_id);
+            const existingBallots = readBallots().filter((ballot) => matchesElectionAlias(ballot.election_id, electionContext.aliases));
             if (existingBallots.some(b => b.receipt_hash === receipt_hash)) {
                 return { ok: false, error: 'Duplicate receipt_hash' };
             }
@@ -128,14 +143,15 @@ app.get('/api/board', (req, res) => {
         }
 
         const elections = readElections();
-        const election = elections.elections[election_id];
+        const electionContext = resolveElectionContext(elections, election_id);
+        const election = electionContext?.election;
 
         if (!election) {
             return res.status(404).json({ ok: false, error: 'Election not found' });
         }
 
         const allBallots = readBallots();
-        const ballots = allBallots.filter(b => b.election_id === election_id);
+        const ballots = allBallots.filter((ballot) => matchesElectionAlias(ballot.election_id, electionContext.aliases));
 
         // Return public ballot fields only
         const publicBallots = ballots.map(b => ({
@@ -151,8 +167,9 @@ app.get('/api/board', (req, res) => {
         res.json({
             ok: true,
             ballots: publicBallots,
+            candidates: getElectionCandidates(election),
             election: {
-                id: election_id,
+                id: electionContext.requestId,
                 title: election.title,
                 status: election.status,
                 chain_head: election.chain_head,
@@ -179,9 +196,15 @@ app.get('/api/receipt', (req, res) => {
             return res.status(400).json({ ok: false, error: 'Missing required parameters' });
         }
 
+        const elections = readElections();
+        const electionContext = resolveElectionContext(elections, election_id);
+        if (!electionContext) {
+            return res.status(404).json({ ok: false, error: 'Election not found' });
+        }
+
         const allBallots = readBallots();
         const ballot = allBallots.find(
-            b => b.election_id === election_id && b.receipt_hash === receipt_hash
+            b => matchesElectionAlias(b.election_id, electionContext.aliases) && b.receipt_hash === receipt_hash
         );
 
         if (!ballot) {
@@ -225,7 +248,8 @@ app.get('/api/verify', (req, res) => {
         }
 
         const elections = readElections();
-        const election = elections.elections[election_id];
+        const electionContext = resolveElectionContext(elections, election_id);
+        const election = electionContext?.election;
 
         if (!election) {
             return res.status(404).json({ ok: false, error: 'Election not found' });
@@ -233,7 +257,7 @@ app.get('/api/verify', (req, res) => {
 
         const allBallots = readBallots();
         const ballots = allBallots
-            .filter(b => b.election_id === election_id)
+            .filter((ballot) => matchesElectionAlias(ballot.election_id, electionContext.aliases))
             .sort((a, b) => a.index - b.index);
 
         const errors = [];
@@ -262,7 +286,7 @@ app.get('/api/verify', (req, res) => {
             // Verify chain_hash formula
             const expectedChainHash = computeChainHash(
                 ballot.prev_hash,
-                election_id,
+                ballot.election_id || electionContext.requestId,
                 ballot.index,
                 ballot.commit,
                 ballot.cast_at
@@ -321,7 +345,8 @@ app.post('/api/close', async (req, res) => {
 
         const result = await withLock(async () => {
             const elections = readElections();
-            const election = elections.elections[election_id];
+            const electionContext = resolveElectionContext(elections, election_id);
+            const election = electionContext?.election;
 
             if (!election) {
                 return { ok: false, error: 'Election not found' };
@@ -342,28 +367,31 @@ app.post('/api/close', async (req, res) => {
             // Generate tally proof if demo mode
             let tallyProof = null;
             if (election.mode === 'demo') {
-                const reveals = readReveals().filter(r => r.election_id === election_id);
-                const ballots = readBallots().filter(b => b.election_id === election_id);
+                const candidates = getElectionCandidates(election);
+                const reveals = readReveals().filter((reveal) => matchesElectionAlias(reveal.election_id, electionContext.aliases));
+                const ballots = readBallots().filter((ballot) => matchesElectionAlias(ballot.election_id, electionContext.aliases));
 
                 // Build tally
-                const tally = { A: 0, B: 0, C: 0 };
+                const tally = Object.fromEntries(candidates.map((candidate) => [candidate.id, 0]));
                 const verifiedVotes = [];
 
                 for (const reveal of reveals) {
                     const ballot = ballots.find(b => b.ballot_id === reveal.ballot_id);
                     if (ballot) {
                         // Verify the commit matches: SHA256(election_id|choice|nonce) === commit
-                        const expectedCommit = sha256(`${election_id}|${reveal.choice}|${reveal.nonce}`);
+                        const expectedCommit = sha256(`${ballot.election_id || electionContext.requestId}|${reveal.choice}|${reveal.nonce}`);
                         const verified = expectedCommit === ballot.commit;
+                        const choiceId = mapChoiceToCandidateId(reveal.choice, candidates);
 
-                        if (verified && (reveal.choice === 'A' || reveal.choice === 'B' || reveal.choice === 'C')) {
-                            tally[reveal.choice]++;
+                        if (verified && choiceId) {
+                            tally[choiceId] = (tally[choiceId] || 0) + 1;
                         }
 
                         verifiedVotes.push({
                             ballot_id: reveal.ballot_id,
                             index: ballot.index,
-                            choice: reveal.choice,
+                            choice: choiceId || reveal.choice,
+                            choice_raw: reveal.choice,
                             commit: ballot.commit,
                             expected_commit: expectedCommit,
                             verified
@@ -372,12 +400,13 @@ app.post('/api/close', async (req, res) => {
                 }
 
                 tallyProof = {
-                    election_id,
+                    election_id: electionContext.requestId,
                     closed_at,
                     snapshot_hash,
                     chain_head: election.chain_head,
                     ballot_count: election.ballot_count,
                     tally,
+                    candidates: candidates.map(({ id, name, party, platform }) => ({ id, name, party, platform })),
                     verified_votes: verifiedVotes,
                     total_revealed: reveals.length,
                     all_verified: verifiedVotes.every(v => v.verified)
@@ -434,7 +463,8 @@ app.post('/api/reset', async (req, res) => {
 
         const result = await withLock(async () => {
             const elections = readElections();
-            const election = elections.elections[election_id];
+            const electionContext = resolveElectionContext(elections, election_id);
+            const election = electionContext?.election;
 
             if (!election) {
                 return { ok: false, error: 'Election not found' };

@@ -7,9 +7,122 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, '..', 'data');
+export const DEFAULT_ELECTION_ID = 'e0000000-0000-0000-0000-000000000001';
+export const LEGACY_ELECTION_ID = '00000000-0000-0000-0000-000000000000';
+export const DEFAULT_CANDIDATES = Object.freeze([
+    {
+        id: 'CAND-A',
+        name: 'Progressive India Alliance',
+        party: 'Progressive India Alliance',
+        platform: 'Universal Digital Infrastructure, Green Energy Expansion, Education Reform.'
+    },
+    {
+        id: 'CAND-B',
+        name: 'National Democratic Front',
+        party: 'National Democratic Front',
+        platform: 'Economic Deregulation, Strong Border Security, Manufacturing Hub.'
+    },
+    {
+        id: 'CAND-C',
+        name: 'Independent Voice',
+        party: 'Independent Voice',
+        platform: 'Local Governance, Agricultural Subsidies, Healthcare Access.'
+    },
+]);
 
 // In-process mutex for concurrent request safety
 let lockPromise = Promise.resolve();
+
+function cloneCandidateSlate(candidates = DEFAULT_CANDIDATES) {
+    return candidates.map((candidate) => ({ ...candidate }));
+}
+
+function normalizeCandidateSlate(candidates) {
+    if (!Array.isArray(candidates)) return cloneCandidateSlate();
+
+    const normalized = candidates
+        .filter((candidate) => candidate && typeof candidate.name === 'string')
+        .map((candidate, index) => {
+            const fallback = DEFAULT_CANDIDATES[index] || {};
+            const name = candidate.name.trim() || fallback.name || `Candidate ${index + 1}`;
+            return {
+                id: candidate.id || fallback.id || `CAND-${index + 1}`,
+                name,
+                party: candidate.party?.trim() || fallback.party || name,
+                platform: candidate.platform?.trim() || fallback.platform || '',
+            };
+        });
+
+    return normalized.length >= 2 ? normalized : cloneCandidateSlate();
+}
+
+function buildDefaultElection(overrides = {}) {
+    return {
+        title: 'Glass Ballot Box Demo',
+        status: 'open',
+        created_at: overrides.created_at || new Date().toISOString(),
+        ballot_count: Number.isFinite(overrides.ballot_count) ? overrides.ballot_count : 0,
+        chain_head: overrides.chain_head || 'GENESIS',
+        snapshot_hash: overrides.snapshot_hash || null,
+        closed_at: overrides.closed_at || null,
+        mode: overrides.mode === 'demo' ? 'demo' : 'safe',
+        candidates: normalizeCandidateSlate(overrides.candidates),
+    };
+}
+
+function normalizeElectionsData(data = {}) {
+    const elections = {};
+    const rawElections = data && typeof data.elections === 'object' && data.elections ? data.elections : {};
+
+    for (const [id, election] of Object.entries(rawElections)) {
+        elections[id] = buildDefaultElection(election || {});
+    }
+
+    if (!Object.keys(elections).length) {
+        elections[DEFAULT_ELECTION_ID] = buildDefaultElection();
+    }
+
+    const requestedActiveId = typeof data.active_election_id === 'string' ? data.active_election_id : null;
+    const active_election_id = elections[requestedActiveId]
+        ? requestedActiveId
+        : (elections[DEFAULT_ELECTION_ID] ? DEFAULT_ELECTION_ID : Object.keys(elections)[0]);
+
+    return { active_election_id, elections };
+}
+
+export function getElectionCandidates(election) {
+    return normalizeCandidateSlate(election?.candidates);
+}
+
+export function resolveElectionContext(electionsData, requestedId) {
+    if (!requestedId) return null;
+
+    const elections = electionsData?.elections || {};
+    if (elections[requestedId]) {
+        return {
+            key: requestedId,
+            requestId: requestedId,
+            aliases: [requestedId],
+            election: elections[requestedId],
+        };
+    }
+
+    const activeId = electionsData?.active_election_id;
+    const activeElection = activeId ? elections[activeId] : null;
+    const requestedIsAlias = requestedId === DEFAULT_ELECTION_ID || requestedId === LEGACY_ELECTION_ID;
+    const activeIsAlias = activeId === DEFAULT_ELECTION_ID || activeId === LEGACY_ELECTION_ID;
+
+    if (activeElection && requestedIsAlias && activeIsAlias) {
+        return {
+            key: activeId,
+            requestId: requestedId,
+            aliases: [...new Set([requestedId, activeId])],
+            election: activeElection,
+        };
+    }
+
+    return null;
+}
 
 /**
  * Acquire a lock for atomic operations
@@ -41,21 +154,10 @@ export function initStorage() {
 
     const electionsPath = join(DATA_DIR, 'elections.json');
     if (!existsSync(electionsPath)) {
-        const defaultElection = {
-            active_election_id: '00000000-0000-0000-0000-000000000000',
-            elections: {
-                '00000000-0000-0000-0000-000000000000': {
-                    title: 'Glass Ballot Box Demo',
-                    status: 'open',
-                    created_at: new Date().toISOString(),
-                    ballot_count: 0,
-                    chain_head: 'GENESIS',
-                    snapshot_hash: null,
-                    mode: 'safe'
-                }
-            }
-        };
-        writeFileSync(electionsPath, JSON.stringify(defaultElection, null, 2));
+        writeFileSync(electionsPath, JSON.stringify(normalizeElectionsData(), null, 2));
+    } else {
+        const normalized = normalizeElectionsData(JSON.parse(readFileSync(electionsPath, 'utf8')));
+        writeFileSync(electionsPath, JSON.stringify(normalized, null, 2));
     }
 
     // Create empty log files if they don't exist
@@ -77,7 +179,7 @@ export function initStorage() {
 export function readElections() {
     const electionsPath = join(DATA_DIR, 'elections.json');
     const data = readFileSync(electionsPath, 'utf8');
-    return JSON.parse(data);
+    return normalizeElectionsData(JSON.parse(data));
 }
 
 /**
@@ -87,7 +189,7 @@ export function readElections() {
 export function writeElections(data) {
     const electionsPath = join(DATA_DIR, 'elections.json');
     const tempPath = join(DATA_DIR, 'elections.json.tmp');
-    writeFileSync(tempPath, JSON.stringify(data, null, 2));
+    writeFileSync(tempPath, JSON.stringify(normalizeElectionsData(data), null, 2));
     renameSync(tempPath, electionsPath);
 }
 
