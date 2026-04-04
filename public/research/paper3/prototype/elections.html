@@ -205,7 +205,7 @@
             <!-- Demo Election Featured -->
             <div class="border-t border-white/5 pt-10">
                 <p class="text-xs text-paper-muted uppercase tracking-widest font-mono mb-5">Featured · Demo Election</p>
-                <a href="/e/e0000000-0000-0000-0000-000000000001"
+                <a href="./index.html?election_id=e0000000-0000-0000-0000-000000000001"
                     class="block election-card glass-panel rounded-2xl p-6 border border-brand-blue/20 hover:no-underline">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1">
@@ -247,6 +247,14 @@
             setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 350); }, 4000);
         }
 
+        function buildElectionUrl(electionId) {
+            const url = new URL('./index.html', window.location.href);
+            url.search = '';
+            url.hash = '';
+            url.searchParams.set('election_id', electionId);
+            return url.toString();
+        }
+
         // ── Load elections ─────────────────────────────────────────────────────
         async function loadElections() {
             try {
@@ -277,7 +285,7 @@
                     const shortId = e.id.substring(0, 8);
                     const date = e.created_at ? new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
                     return `
-                        <a href="/e/${e.id}" class="block election-card glass-panel rounded-2xl p-6 border border-white/5 hover:no-underline">
+                        <a href="${buildElectionUrl(e.id)}" class="block election-card glass-panel rounded-2xl p-6 border border-white/5 hover:no-underline">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center gap-3 mb-1">
@@ -375,9 +383,9 @@
                 const data = await res.json();
 
                 if (data.ok) {
-                    const fullUrl = window.location.origin + data.url;
+                    const fullUrl = buildElectionUrl(data.election_id);
                     document.getElementById('new-election-url').textContent = fullUrl;
-                    document.getElementById('goto-new-election').href = data.url;
+                    document.getElementById('goto-new-election').href = fullUrl;
                     document.getElementById('copy-new-url').onclick = () => {
                         navigator.clipboard.writeText(fullUrl).then(() => toast('URL copied!', 'success'));
                     };

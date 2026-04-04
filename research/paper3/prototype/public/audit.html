@@ -297,8 +297,21 @@
         let electionId = null;
         let boardData = null;
 
-        function getElectionIdFromPath() {
-            // Path: /e/:id/audit
+        function buildBoothUrl(id) {
+            const marker = '/research/paper3/prototype/';
+            const scopedBase = location.pathname.includes(marker)
+                ? `${location.origin}${marker}index.html`
+                : `${location.origin}/index.html`;
+            const url = new URL(scopedBase);
+            url.searchParams.set('election_id', id);
+            return url.toString();
+        }
+
+        function getElectionIdFromUrl() {
+            const queryId = new URLSearchParams(location.search).get('election_id');
+            if (queryId) return queryId;
+
+            // Legacy path: /e/:id/audit
             const parts = location.pathname.split('/');
             const eIdx = parts.indexOf('e');
             return eIdx !== -1 && parts[eIdx + 1] ? parts[eIdx + 1] : null;
@@ -337,15 +350,15 @@
         }
 
         // ── Load Board ───────────────────────────────────────────────────────────
-        electionId = getElectionIdFromPath();
+        electionId = getElectionIdFromUrl();
         if (!electionId) {
             document.title = 'Audit — Error';
-            await logLine('ERROR: No election ID found in URL path.', 'status-err');
-            await logLine('Expected path: /e/:id/audit', 'status-dim');
+            await logLine('ERROR: No election ID found in URL.', 'status-err');
+            await logLine('Expected ?election_id=<id> or legacy /e/:id/audit', 'status-dim');
             return;
         }
 
-        $('nav-back-link').href = `/e/${electionId}`;
+        $('nav-back-link').href = buildBoothUrl(electionId);
         $('download-chain-btn').onclick = () => { window.open(`/api/chain/export?election_id=${electionId}`, '_blank'); };
         $('download-proof-btn').onclick = () => { window.open(`/api/audit/proof?election_id=${electionId}`, '_blank'); };
 
