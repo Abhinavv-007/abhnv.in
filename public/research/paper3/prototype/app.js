@@ -48,6 +48,19 @@ function normalizeCandidateSlate(candidates) {
     return normalized.length >= 2 ? normalized : cloneCandidateSlate();
 }
 
+function buildPrototypePageUrl(page, electionId = null, extraParams = {}) {
+    const marker = '/research/paper3/prototype/';
+    const scopedBase = window.location.pathname.includes(marker)
+        ? `${window.location.origin}${marker}${page}`
+        : `${window.location.origin}/${page}`;
+    const url = new URL(scopedBase);
+    if (electionId) url.searchParams.set('election_id', electionId);
+    Object.entries(extraParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, value);
+    });
+    return url.toString();
+}
+
 // ── STATE ──────────────────────────────────────────────────────────────────────
 const state = {
     electionId: DEFAULT_ELECTION_ID,
@@ -257,12 +270,15 @@ async function apiCall(endpoint, options = {}) {
 
 // ── INIT ───────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Read election ID from URL if present: /e/:id
+    // Read election ID from ?election_id= or /e/:id
+    const params = new URLSearchParams(window.location.search);
+    const queryElectionId = params.get('election_id');
     const pathMatch = window.location.pathname.match(/^\/e\/([^/]+)/);
-    if (pathMatch) state.electionId = pathMatch[1];
+    if (queryElectionId) state.electionId = queryElectionId;
+    else if (pathMatch) state.electionId = pathMatch[1];
 
     // Pre-populate receipt input from ?verify= query param
-    const verifyToken = new URLSearchParams(window.location.search).get('verify');
+    const verifyToken = params.get('verify');
     if (verifyToken) {
         const input = $('#receipt-input');
         if (input) { input.value = verifyToken; setTimeout(() => verifyReceipt(), 600); }
@@ -481,9 +497,8 @@ function showReceiptPanel() {
 }
 
 function buildVerifyUrl() {
-    const base = window.location.origin;
     const token = state.lastReceipt?.token || '';
-    return `${base}/e/${state.electionId}?verify=${token}`;
+    return buildPrototypePageUrl('index.html', state.electionId, { verify: token });
 }
 
 function generateQR(url) {
