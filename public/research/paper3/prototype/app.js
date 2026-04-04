@@ -3,12 +3,57 @@
  * Vanilla JS, no framework, SubtleCrypto for all cryptographic operations.
  */
 
+const DEFAULT_ELECTION_ID = 'e0000000-0000-0000-0000-000000000001';
+const DEFAULT_CANDIDATES = Object.freeze([
+    {
+        id: 'CAND-A',
+        name: 'Progressive India Alliance',
+        party: 'Progressive India Alliance',
+        platform: 'Universal Digital Infrastructure, Green Energy Expansion, Education Reform.'
+    },
+    {
+        id: 'CAND-B',
+        name: 'National Democratic Front',
+        party: 'National Democratic Front',
+        platform: 'Economic Deregulation, Strong Border Security, Manufacturing Hub.'
+    },
+    {
+        id: 'CAND-C',
+        name: 'Independent Voice',
+        party: 'Independent Voice',
+        platform: 'Local Governance, Agricultural Subsidies, Healthcare Access.'
+    },
+]);
+
+function cloneCandidateSlate(candidates = DEFAULT_CANDIDATES) {
+    return candidates.map((candidate) => ({ ...candidate }));
+}
+
+function normalizeCandidateSlate(candidates) {
+    if (!Array.isArray(candidates)) return cloneCandidateSlate();
+
+    const normalized = candidates
+        .filter((candidate) => candidate && typeof candidate.name === 'string')
+        .map((candidate, index) => {
+            const fallback = DEFAULT_CANDIDATES[index] || {};
+            const name = candidate.name.trim() || fallback.name || `Candidate ${index + 1}`;
+            return {
+                id: candidate.id || fallback.id || `CAND-${index + 1}`,
+                name,
+                party: candidate.party?.trim() || fallback.party || name,
+                platform: candidate.platform?.trim() || fallback.platform || '',
+            };
+        });
+
+    return normalized.length >= 2 ? normalized : cloneCandidateSlate();
+}
+
 // ── STATE ──────────────────────────────────────────────────────────────────────
 const state = {
-    electionId: 'e0000000-0000-0000-0000-000000000001',
+    electionId: DEFAULT_ELECTION_ID,
     election: null,
     ballots: [],
-    candidates: [],
+    candidates: cloneCandidateSlate(),
     selectedCandidate: null,
     mode: 'safe',
     lastReceipt: null,
@@ -67,7 +112,7 @@ const MockServer = {
     DELAY: 250,
     db: {
         election: {
-            id: 'e0000000-0000-0000-0000-000000000001',
+            id: DEFAULT_ELECTION_ID,
             title: 'Glass Ballot Box Demo (India National Mock Election)',
             status: 'open',
             chain_head: 'GENESIS',
@@ -75,11 +120,7 @@ const MockServer = {
             closed_at: null,
             mode: 'demo',
         },
-        candidates: [
-            { id: 'CAND-A', name: 'Progressive India Alliance', party: 'Progressive India Alliance', platform: 'Universal Digital Infrastructure, Green Energy Expansion, Education Reform.' },
-            { id: 'CAND-B', name: 'National Democratic Front', party: 'National Democratic Front', platform: 'Economic Deregulation, Strong Border Security, Manufacturing Hub.' },
-            { id: 'CAND-C', name: 'Independent Voice', party: 'Independent Voice', platform: 'Local Governance, Agricultural Subsidies, Healthcare Access.' },
-        ],
+        candidates: cloneCandidateSlate(),
         ballots: [],
     },
 
@@ -89,9 +130,11 @@ const MockServer = {
             if (stored) {
                 this.db = JSON.parse(stored);
                 // Always ensure the election ID matches the real demo election
-                this.db.election.id = 'e0000000-0000-0000-0000-000000000001';
+                this.db.election.id = DEFAULT_ELECTION_ID;
             }
         } catch (e) { console.error('Mock DB init failed', e); }
+        this.db.candidates = normalizeCandidateSlate(this.db.candidates);
+        this.db.ballots = Array.isArray(this.db.ballots) ? this.db.ballots : [];
     },
 
     save() {
@@ -230,14 +273,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initApp() {
-    // Update export download links
+    updateExportLinks();
+    renderCandidates();
+
+    await Promise.all([fetchBoard(), fetchStats()]);
+    startPolling();
+}
+
+function updateExportLinks() {
     const exportChain = $('#export-chain-btn');
     const exportProof = $('#export-proof-btn');
     if (exportChain) exportChain.href = `/api/chain/export?election_id=${state.electionId}`;
     if (exportProof) exportProof.href = `/api/audit/proof?election_id=${state.electionId}`;
-
-    await Promise.all([fetchBoard(), fetchStats()]);
-    startPolling();
 }
 
 // ── EVENT LISTENERS ────────────────────────────────────────────────────────────
@@ -288,14 +335,20 @@ async function fetchBoard() {
         if (data.ok) {
             state.election = data.election;
             state.ballots = data.ballots || [];
-            state.candidates = data.candidates || [];
+            state.candidates = normalizeCandidateSlate(data.candidates);
             state.mode = data.election.mode || 'safe';
+            updateExportLinks();
             renderCandidates();
             renderBoard();
             updateElectionStatus();
+        } else {
+            state.candidates = normalizeCandidateSlate(state.candidates);
+            renderCandidates();
         }
     } catch (e) {
         console.error('fetchBoard error:', e);
+        state.candidates = normalizeCandidateSlate(state.candidates);
+        renderCandidates();
     }
 }
 
@@ -899,20 +952,38 @@ function resetElection() {
 // ── UI RENDERING ───────────────────────────────────────────────────────────────
 function renderCandidates() {
     const list = $('#candidates-list');
-    if (!list || !state.candidates.length) return;
-    // Only re-render if candidates changed
-    const existing = list.querySelectorAll('.candidate-btn');
-    if (existing.length === state.candidates.length && !list.querySelector('.italic')) return;
+    const countPill = $('#candidate-count-pill');
+    if (!list) return;
 
-    list.innerHTML = state.candidates.map(c => `
-        <button data-candidate="${c.id}"
-            class="candidate-btn group w-full p-5 text-left border border-white/5 rounded-2xl transition-all font-sans flex justify-between items-start bg-black/20 hover:bg-brand-blue/5 hover:border-brand-blue/40 relative overflow-hidden gap-4">
-            <div class="relative z-10 flex-1">
-                <span class="text-base font-medium group-hover:text-brand-glow transition-colors block mb-1">${c.name}</span>
-                ${c.platform ? `<span class="text-xs text-paper-muted/60 font-light line-clamp-1">${c.platform}</span>` : ''}
+    const candidates = normalizeCandidateSlate(state.candidates);
+    state.candidates = candidates;
+    if (countPill) countPill.textContent = `${candidates.length} candidates loaded`;
+    if (state.selectedCandidate && !candidates.some((candidate) => candidate.id === state.selectedCandidate)) {
+        state.selectedCandidate = null;
+    }
+
+    const signature = JSON.stringify(candidates.map(({ id, name, party, platform }) => [id, name, party, platform]));
+    if (list.dataset.signature === signature) {
+        if (state.selectedCandidate) selectCandidate(state.selectedCandidate);
+        return;
+    }
+    list.dataset.signature = signature;
+
+    list.innerHTML = candidates.map((candidate, index) => `
+        <button data-candidate="${candidate.id}" aria-pressed="false"
+            class="candidate-btn group w-full px-6 py-6 md:px-7 md:py-7 text-left border border-white/8 rounded-[1.75rem] transition-all font-sans flex items-start gap-5 bg-gradient-to-br from-white/[0.05] via-black/30 to-black/50 hover:from-brand-blue/10 hover:to-black/60 hover:border-brand-blue/40 hover:-translate-y-1 shadow-[0_16px_40px_rgba(0,0,0,0.28)] relative overflow-hidden">
+            <div class="relative z-10 w-12 h-12 md:w-14 md:h-14 rounded-2xl border border-white/10 bg-white/[0.04] flex items-center justify-center text-brand-glow font-mono text-sm md:text-base tracking-[0.18em] flex-shrink-0">
+                ${String(index + 1).padStart(2, '0')}
             </div>
-            <div class="w-5 h-5 rounded-full border-2 border-paper-muted candidate-radio transition-all flex-shrink-0 mt-0.5 group-hover:border-brand-blue"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-brand-blue/0 to-brand-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div class="relative z-10 flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                    <span class="text-xl md:text-2xl font-semibold text-white group-hover:text-brand-glow transition-colors leading-tight">${candidate.name}</span>
+                    <span class="inline-flex items-center rounded-full border border-brand-blue/20 bg-brand-blue/10 px-3 py-1 text-[11px] md:text-xs font-mono uppercase tracking-[0.22em] text-brand-glow/90">${candidate.party}</span>
+                </div>
+                <p class="text-sm md:text-base text-paper-muted/85 leading-relaxed max-w-2xl">${candidate.platform || 'This slate is public. Your actual vote stays sealed inside the commit until reveal.'}</p>
+            </div>
+            <div class="w-7 h-7 rounded-full border-2 border-paper-muted/60 candidate-radio transition-all flex-shrink-0 mt-1 group-hover:border-brand-blue"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.18),transparent_45%),linear-gradient(135deg,transparent,rgba(37,99,235,0.06))] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         </button>
     `).join('');
 
@@ -928,13 +999,16 @@ function selectCandidate(candidate) {
     $$('.candidate-btn').forEach(btn => {
         const selected = btn.dataset.candidate === candidate;
         const radio = btn.querySelector('.candidate-radio');
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
         btn.classList.toggle('border-brand-blue', selected);
         btn.classList.toggle('bg-brand-blue/10', selected);
         btn.classList.toggle('text-brand-glow', selected);
+        btn.classList.toggle('-translate-y-1', selected);
+        btn.classList.toggle('shadow-[0_20px_50px_rgba(37,99,235,0.18)]', selected);
         if (radio) {
             radio.classList.toggle('bg-brand-blue', selected);
             radio.classList.toggle('border-brand-blue', selected);
-            radio.style.boxShadow = selected ? 'inset 0 0 0 3px #0A0A0A' : '';
+            radio.style.boxShadow = selected ? 'inset 0 0 0 5px #0A0A0A' : '';
         }
     });
 }
