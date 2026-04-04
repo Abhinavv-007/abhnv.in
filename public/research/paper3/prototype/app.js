@@ -1015,17 +1015,14 @@ function toggleDemoMode() {
     profileSection?.classList.toggle('hidden', !toggle.checked);
 }
 
-// ── TALLY RESULTS (Redesigned) ─────────────────────────────────────────────────
+// ── TALLY RESULTS (Election Night Ceremony) ───────────────────────────────────
 function showTallyResults(tallyProof) {
     const div = $('#tally-results');
     if (!div) return;
-    div.classList.remove('hidden');
 
     const { tally, candidates = [], total_revealed, snapshot_hash, closed_at } = tallyProof;
-
     const totalVotes = Object.values(tally).reduce((a, b) => a + b, 0);
 
-    // Find winner
     let winnerId = null, maxVotes = -1;
     for (const [id, votes] of Object.entries(tally)) {
         if (votes > maxVotes) { maxVotes = votes; winnerId = id; }
@@ -1033,35 +1030,52 @@ function showTallyResults(tallyProof) {
 
     const getCandName = (id) => candidates.find(c => c.id === id)?.name || id;
 
+    // ── Step 1: Show ceremony overlay ──────────────────────────────────────────
+    const overlay = $('#tally-ceremony-overlay');
+    if (overlay) {
+        overlay.classList.add('active');
+        setTimeout(() => $('#ceremony-subtitle')?.classList.add('show'), 100);
+        setTimeout(() => $('#ceremony-title')?.classList.add('show'), 400);
+        setTimeout(() => {
+            const d = $('#ceremony-dismiss');
+            if (d) d.style.opacity = '1';
+        }, 1400);
+    }
+
+    // ── Step 2: Build results HTML (hidden until ceremony dismissed) ───────────
+    div.classList.remove('hidden');
     div.innerHTML = `
-        <div class="glass-panel rounded-3xl p-10 border border-white/10 animate-fade-in-up">
-            <div class="text-center mb-10">
-                <div class="inline-block px-5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full font-mono text-xs text-amber-400 uppercase tracking-widest mb-5">Election Closed</div>
-                <h3 class="text-4xl font-serif text-white mb-2">Final Results</h3>
-                <p class="text-paper-muted text-sm">${totalVotes} ballot${totalVotes !== 1 ? 's' : ''} cast · ${total_revealed} verified in simulation mode</p>
+        <div class="glass-panel rounded-3xl p-8 md:p-12 border border-white/10" id="tally-results-inner" style="opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="inline-block px-5 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full font-mono text-xs text-amber-400 uppercase tracking-[0.2em] mb-6">
+                    Election Night · Official Results
+                </div>
+                <h3 class="text-5xl md:text-6xl font-serif font-bold text-white mb-3">Final Results</h3>
+                <p class="text-paper-muted font-mono text-sm">${totalVotes.toLocaleString()} ballot${totalVotes !== 1 ? 's' : ''} cast · ${total_revealed} nonces verified</p>
             </div>
 
             <!-- Candidate Results -->
-            <div class="space-y-5 mb-10" id="candidate-results">
-                ${Object.entries(tally).map(([id, votes]) => {
+            <div class="space-y-4 mb-12" id="candidate-results">
+                ${Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([id, votes], i) => {
                     const pct = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
                     const isWinner = id === winnerId && votes > 0;
                     return `
-                    <div class="winner-card ${isWinner ? 'rounded-2xl' : 'rounded-2xl'}" data-id="${id}" data-votes="${votes}" data-pct="${pct.toFixed(1)}">
-                        <div class="bg-black/40 border border-white/5 ${isWinner ? 'border-amber-500/30' : ''} rounded-2xl p-6">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-3">
-                                    ${isWinner ? '<span class="text-amber-400 text-xs font-bold uppercase tracking-wider border border-amber-500/30 px-2 py-0.5 rounded-full">Leading</span>' : ''}
-                                    <span class="text-white font-medium">${getCandName(id)}</span>
+                    <div class="winner-card tally-candidate-row rounded-2xl" data-id="${id}" style="transition-delay:${i * 180}ms">
+                        <div class="rounded-2xl p-6 ${isWinner ? 'bg-gradient-to-r from-amber-500/8 to-black/60 border border-amber-500/25' : 'bg-black/40 border border-white/6'}">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                                    ${isWinner ? `<svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>` : '<div class="w-5 h-5 flex-shrink-0"></div>'}
+                                    <span class="font-serif text-lg ${isWinner ? 'text-amber-100' : 'text-white'} truncate">${getCandName(id)}</span>
                                 </div>
-                                <div class="flex items-baseline gap-2">
-                                    <span class="vote-counter font-mono text-3xl font-bold ${isWinner ? 'text-amber-300' : 'text-brand-glow'}" data-target="${votes}">0</span>
-                                    <span class="text-paper-muted text-sm font-mono">${pct.toFixed(1)}%</span>
+                                <div class="flex items-baseline gap-3 flex-shrink-0 ml-4">
+                                    <span class="vote-counter font-mono text-4xl font-bold ${isWinner ? 'text-amber-300' : 'text-brand-glow'}" data-target="${votes}">0</span>
+                                    <span class="text-paper-muted text-base font-mono">${pct.toFixed(1)}%</span>
                                 </div>
                             </div>
-                            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-                                <div class="result-bar h-full ${isWinner ? 'bg-gradient-to-r from-amber-500 to-amber-300' : 'bg-brand-blue'} rounded-full shadow-[0_0_10px_currentColor]"
-                                     style="--target-width: ${pct.toFixed(1)}%"></div>
+                            <div class="h-2.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="result-bar h-full ${isWinner ? 'bg-gradient-to-r from-amber-600 to-amber-300' : 'bg-brand-blue'} rounded-full"
+                                     style="--target-width: ${pct.toFixed(1)}%; box-shadow: 0 0 12px ${isWinner ? 'rgba(245,158,11,0.6)' : 'rgba(37,99,235,0.5)'}"></div>
                             </div>
                         </div>
                     </div>
@@ -1090,37 +1104,69 @@ function showTallyResults(tallyProof) {
         </div>
     `;
 
-    // Animate counters and bars
-    setTimeout(() => {
-        // Trigger bar animations
-        $$('.result-bar').forEach(bar => bar.classList.add('animated'));
+    // ── Step 3: Dismiss ceremony and animate in results ────────────────────────
+    window.closeTallyCeremony = () => {
+        const overlay = $('#tally-ceremony-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                delete window.closeTallyCeremony;
+            }, 500);
+        }
 
-        // Animate vote counters
-        $$('.vote-counter').forEach(counter => {
-            const target = parseInt(counter.dataset.target, 10);
-            let current = 0;
-            const steps = 40;
-            const interval = 1400 / steps;
-            const timer = setInterval(() => {
-                current = Math.min(current + Math.ceil(target / steps), target);
-                counter.textContent = current.toLocaleString();
-                if (current >= target) clearInterval(timer);
-            }, interval);
-        });
+        const inner = $('#tally-results-inner');
+        if (inner) {
+            inner.style.opacity = '1';
+            inner.style.transform = 'translateY(0)';
+        }
 
-        // Apply winner crown after bars animate
+        div.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Stagger candidate rows in
+        const rows = $$('.tally-candidate-row');
+        rows.forEach((row) => row.classList.add('show'));
+
+        // Start bar + counter animation
         setTimeout(() => {
-            const winnerCard = $(`[data-id="${winnerId}"]`);
-            if (winnerCard) winnerCard.classList.add('crowned');
-        }, 800);
+            $$('.result-bar').forEach(bar => bar.classList.add('animated'));
 
-        // Verified badge appears last
-        setTimeout(() => {
-            $('#verified-badge')?.classList.add('show');
-        }, 2000);
-    }, 200);
+            $$('.vote-counter').forEach(counter => {
+                const target = parseInt(counter.dataset.target, 10);
+                if (target === 0) { counter.textContent = '0'; return; }
+                let current = 0;
+                const duration = 1600;
+                const steps = 50;
+                const interval = duration / steps;
+                const timer = setInterval(() => {
+                    current = Math.min(current + Math.ceil(target / steps), target);
+                    counter.textContent = current.toLocaleString();
+                    if (current >= target) clearInterval(timer);
+                }, interval);
+            });
 
-    div.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Crown winner
+            setTimeout(() => {
+                const winnerCard = $(`[data-id="${winnerId}"]`);
+                if (winnerCard) winnerCard.classList.add('crowned');
+            }, 1000);
+
+            // Verified badge last
+            setTimeout(() => {
+                $('#verified-badge')?.classList.add('show');
+            }, 2200);
+        }, 300);
+    };
+
+    // Auto-dismiss after 4s if user doesn't click
+    const autoDismiss = setTimeout(() => {
+        if (window.closeTallyCeremony) window.closeTallyCeremony();
+    }, 4000);
+    // Cancel auto-dismiss if user clicks manually
+    const dismissBtn = document.querySelector('#ceremony-dismiss button');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => clearTimeout(autoDismiss), { once: true });
+    }
 }
 
 function buildDemographics(tp, getCandName) {

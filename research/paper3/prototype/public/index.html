@@ -188,6 +188,47 @@
         }
         .verified-badge.show { opacity: 1; transform: scale(1) translateY(0); }
 
+        /* ── Tally Ceremony ── */
+        #tally-ceremony-overlay {
+            position: fixed; inset: 0; z-index: 9990;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #tally-ceremony-overlay.active { opacity: 1; pointer-events: auto; }
+        .ceremony-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 700;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .ceremony-title.show { opacity: 1; transform: translateY(0); }
+        .ceremony-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #4b5563;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.4s;
+        }
+        .ceremony-subtitle.show { opacity: 1; }
+        @keyframes count-up-big {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .tally-candidate-row {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .tally-candidate-row.show { opacity: 1; transform: translateX(0); }
+
         /* ── Copy Link Stamp Animation ── */
         .copy-stamp { transition: transform 0.15s; }
         .copy-stamp.stamped { animation: stamp 0.3s ease-out; }
@@ -195,6 +236,98 @@
             0% { transform: scale(1.3); }
             60% { transform: scale(0.9); }
             100% { transform: scale(1); }
+        }
+
+        /* ── Chain Block Infographic ── */
+        .chain-viz { align-items: center; }
+        .chain-block {
+            flex: 1; min-width: 130px; max-width: 200px;
+        }
+        .chain-block-inner {
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            background: rgba(10,10,10,0.7);
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            cursor: default;
+        }
+        .chain-block-inner:hover {
+            transform: translateY(-4px);
+        }
+        .genesis-block .chain-block-inner:hover { border-color: rgba(96,165,250,0.4); box-shadow: 0 0 30px rgba(96,165,250,0.15); }
+        .blue-block .chain-block-inner:hover { border-color: rgba(37,99,235,0.5); box-shadow: 0 0 30px rgba(37,99,235,0.2); }
+        .purple-block .chain-block-inner:hover { border-color: rgba(167,139,250,0.5); box-shadow: 0 0 30px rgba(167,139,250,0.2); }
+        .emerald-block .chain-block-inner:hover { border-color: rgba(52,211,153,0.5); box-shadow: 0 0 30px rgba(52,211,153,0.2); }
+
+        .chain-block-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #4b5563;
+            margin-bottom: 14px;
+        }
+        .chain-block-icon {
+            width: 40px; height: 40px;
+            margin: 0 auto 12px;
+        }
+        .chain-block-icon svg { width: 100%; height: 100%; }
+
+        .chain-block-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            color: #E5E5E5;
+            margin-bottom: 6px;
+        }
+        .chain-block-hash {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+
+        .chain-arrow {
+            flex: 0 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            height: 2px;
+            margin: 0 4px;
+            min-width: 32px;
+        }
+        .chain-arrow-line {
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(to right, rgba(37,99,235,0.15), rgba(37,99,235,0.4), rgba(37,99,235,0.15));
+            transform: translateY(-50%);
+        }
+        @keyframes chain-pulse {
+            0% { left: 0; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: calc(100% - 8px); opacity: 0; }
+        }
+        .chain-arrow-dot {
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #60A5FA;
+            box-shadow: 0 0 8px #60A5FA;
+            animation: chain-pulse 2s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .chain-viz { flex-direction: column; align-items: stretch; gap: 8px; }
+            .chain-block { max-width: 100%; }
+            .chain-arrow { height: 32px; width: 2px; flex: 0 0 32px; margin: 0 auto; }
+            .chain-arrow-line { top: 0; bottom: 0; left: 50%; right: auto; width: 1px; height: 100%; transform: translateX(-50%); background: linear-gradient(to bottom, rgba(37,99,235,0.15), rgba(37,99,235,0.4), rgba(37,99,235,0.15)); }
+            .chain-arrow-dot { top: 0; left: 50%; transform: translateX(-50%); animation-name: chain-pulse-v; }
+            @keyframes chain-pulse-v { 0%{top:0;opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{top:calc(100% - 6px);opacity:0} }
         }
 
         /* ── API Docs ── */
@@ -239,6 +372,19 @@
             <div class="flex gap-4">
                 <button id="confirm-cancel" class="flex-1 py-3 rounded-xl border border-white/10 text-paper-muted hover:text-white hover:border-white/30 transition-all text-sm font-bold tracking-wider">CANCEL</button>
                 <button id="confirm-ok" class="flex-1 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all text-sm font-bold tracking-wider">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tally Ceremony Overlay -->
+    <div id="tally-ceremony-overlay">
+        <div class="text-center px-8" id="tally-ceremony-inner">
+            <div class="ceremony-subtitle mb-8" id="ceremony-subtitle">Election Night · Results Incoming</div>
+            <div class="ceremony-title" id="ceremony-title">The Votes<br>Are In.</div>
+            <div class="mt-12 opacity-0 transition-opacity duration-500" id="ceremony-dismiss" style="transition-delay:0.8s">
+                <button onclick="window.closeTallyCeremony()" class="px-8 py-3 border border-white/20 text-white/60 rounded-full font-mono text-xs tracking-widest hover:border-white/50 hover:text-white transition-all">
+                    REVEAL RESULTS →
+                </button>
             </div>
         </div>
     </div>
@@ -308,13 +454,19 @@
                     </div>
                 </div>
 
-                <div class="flex justify-center gap-6 flex-wrap">
-                    <a href="#intro" class="group relative px-10 py-4 bg-brand-blue text-white rounded-full font-bold tracking-wider shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:bg-brand-accent hover:scale-105 hover:shadow-[0_0_50px_rgba(37,99,235,0.6)] transition-all overflow-hidden">
-                        <span class="relative z-10">Start Reading</span>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <a href="/elections#create" class="group relative px-8 py-4 bg-brand-blue text-white rounded-full font-bold tracking-wider shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:bg-brand-accent hover:scale-105 hover:shadow-[0_0_50px_rgba(37,99,235,0.6)] transition-all overflow-hidden text-sm">
+                        <span class="relative z-10 flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Create an Election
+                        </span>
                         <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     </a>
-                    <a href="#demo" class="px-10 py-4 border border-white/10 bg-white/5 backdrop-blur text-paper-muted rounded-full font-bold tracking-wider hover:text-white hover:border-white/50 hover:bg-white/10 transition-all">
-                        Launch Demo
+                    <a href="#demo" class="px-8 py-4 border border-white/10 bg-white/5 backdrop-blur text-paper-muted rounded-full font-bold tracking-wider hover:text-white hover:border-white/50 hover:bg-white/10 transition-all text-sm">
+                        Try Demo
+                    </a>
+                    <a href="#intro" class="px-8 py-4 border border-transparent text-paper-muted/60 rounded-full font-bold tracking-wider hover:text-paper-muted transition-all text-sm">
+                        Read the Paper
                     </a>
                 </div>
             </div>
@@ -741,41 +893,111 @@
                     </div>
                 </div>
 
-                <!-- Audit Pipeline Cards -->
-                <div class="relative max-w-6xl mx-auto mt-16">
-                    <div class="hidden md:block absolute top-[40%] left-0 w-full h-[1px] bg-brand-blue/30 -translate-y-1/2 z-0">
-                        <div class="absolute top-0 left-0 h-full w-20 bg-brand-blue blur-[2px] animate-[slideRight_3s_linear_infinite]"></div>
+                <!-- Chain Block Infographic -->
+                <div class="max-w-5xl mx-auto mt-16">
+                    <p class="text-center text-xs font-mono text-paper-muted/60 uppercase tracking-[0.25em] mb-8">How the chain is built</p>
+
+                    <!-- Chain visualization -->
+                    <div class="chain-viz flex flex-col md:flex-row items-stretch gap-0 overflow-x-auto pb-4">
+
+                        <!-- GENESIS block -->
+                        <div class="chain-block genesis-block flex-shrink-0">
+                            <div class="chain-block-inner">
+                                <div class="chain-block-label">ORIGIN</div>
+                                <div class="chain-block-icon">
+                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="20" cy="20" r="14" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 2"/>
+                                        <text x="20" y="25" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#60A5FA" font-weight="500">G</text>
+                                    </svg>
+                                </div>
+                                <div class="chain-block-title">GENESIS</div>
+                                <div class="chain-block-hash">prev: none</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow 1 -->
+                        <div class="chain-arrow">
+                            <div class="chain-arrow-line"></div>
+                            <div class="chain-arrow-dot"></div>
+                        </div>
+
+                        <!-- Block 001 — Commit step -->
+                        <div class="chain-block blue-block flex-shrink-0">
+                            <div class="chain-block-inner">
+                                <div class="chain-block-label">BALLOT #001</div>
+                                <div class="chain-block-icon commit-icon">
+                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="8" y="10" width="24" height="20" rx="3" stroke="#60A5FA" stroke-width="1.5"/>
+                                        <line x1="13" y1="17" x2="27" y2="17" stroke="#60A5FA" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+                                        <line x1="13" y1="21" x2="22" y2="21" stroke="#60A5FA" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+                                        <circle cx="28" cy="27" r="5" fill="#050505" stroke="#4ade80" stroke-width="1.5"/>
+                                        <path d="M25.5 27l1.5 1.5 3-3" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="chain-block-title">commit</div>
+                                <div class="chain-block-hash font-mono text-[9px]">SHA256(id|choice|nonce)</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow 2 -->
+                        <div class="chain-arrow">
+                            <div class="chain-arrow-line"></div>
+                            <div class="chain-arrow-dot" style="animation-delay:0.4s"></div>
+                        </div>
+
+                        <!-- Block 002 — Chain step -->
+                        <div class="chain-block purple-block flex-shrink-0">
+                            <div class="chain-block-inner">
+                                <div class="chain-block-label">BALLOT #002</div>
+                                <div class="chain-block-icon chain-icon">
+                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M14 20h12" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
+                                        <rect x="5" y="15" width="10" height="10" rx="2" stroke="#a78bfa" stroke-width="1.5"/>
+                                        <rect x="25" y="15" width="10" height="10" rx="2" stroke="#a78bfa" stroke-width="1.5"/>
+                                        <circle cx="10" cy="20" r="2" fill="#a78bfa" opacity="0.4"/>
+                                        <circle cx="30" cy="20" r="2" fill="#a78bfa" opacity="0.4"/>
+                                    </svg>
+                                </div>
+                                <div class="chain-block-title">chain_hash</div>
+                                <div class="chain-block-hash font-mono text-[9px]">SHA256(prev|id|i|commit|t)</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow 3 -->
+                        <div class="chain-arrow">
+                            <div class="chain-arrow-line"></div>
+                            <div class="chain-arrow-dot" style="animation-delay:0.8s"></div>
+                        </div>
+
+                        <!-- Block N — Snapshot seal -->
+                        <div class="chain-block emerald-block flex-shrink-0">
+                            <div class="chain-block-inner">
+                                <div class="chain-block-label">CLOSE</div>
+                                <div class="chain-block-icon">
+                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6l2.5 7.5H30l-6 4.5 2.5 7.5L20 21l-6.5 4.5 2.5-7.5L10 13.5h7.5z" stroke="#34d399" stroke-width="1.5" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="chain-block-title">snapshot</div>
+                                <div class="chain-block-hash font-mono text-[9px]">SHA256(head|count|closed_at)</div>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                        <div class="group relative">
-                            <div class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 transition-all duration-500 group-hover:scale-105 group-hover:border-brand-blue/40 group-hover:shadow-[0_0_40px_rgba(37,99,235,0.3)] flex flex-col items-center text-center h-full">
-                                <div class="w-28 h-28 mb-8 relative">
-                                    <div class="absolute inset-0 bg-brand-blue/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow"></div>
-                                    <img src="./icon-signature.png" alt="Signature" class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(37,99,235,0.6)] group-hover:rotate-6 transition-transform duration-700">
-                                </div>
-                                <h4 class="text-xl font-serif text-white mb-4 group-hover:text-brand-glow transition-colors">1. Cryptographic<br>Signature</h4>
-                                <p class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">Validates the origin of every vote against the chain — no signatures means no valid ballot.</p>
-                            </div>
+
+                    <!-- Step labels below -->
+                    <div class="grid grid-cols-3 gap-4 mt-10 max-w-3xl mx-auto">
+                        <div class="text-center px-4">
+                            <div class="text-brand-glow font-mono text-[10px] uppercase tracking-widest mb-2">1. Commit</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">Your choice is hashed with a secret nonce — published, but unreadable. Nobody can reverse it.</p>
                         </div>
-                        <div class="group relative">
-                            <div class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 transition-all duration-500 group-hover:scale-105 group-hover:border-purple-500/40 group-hover:shadow-[0_0_40px_rgba(168,85,247,0.3)] flex flex-col items-center text-center h-full">
-                                <div class="w-28 h-28 mb-8 relative">
-                                    <div class="absolute inset-0 bg-purple-500/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow"></div>
-                                    <img src="./icon-hash.png" alt="Hash" class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(168,85,247,0.6)] group-hover:scale-110 transition-transform duration-700">
-                                </div>
-                                <h4 class="text-xl font-serif text-white mb-4 group-hover:text-purple-300 transition-colors">2. Chain<br>Consistency</h4>
-                                <p class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">Recomputes every hash link. Altering any ballot breaks the entire chain from that point forward.</p>
-                            </div>
+                        <div class="text-center px-4">
+                            <div class="text-purple-400 font-mono text-[10px] uppercase tracking-widest mb-2">2. Chain</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">Every ballot links to the previous hash. Alter one block and every subsequent hash breaks.</p>
                         </div>
-                        <div class="group relative">
-                            <div class="glass-panel p-8 rounded-3xl border border-white/5 bg-black/40 transition-all duration-500 group-hover:scale-105 group-hover:border-emerald-500/40 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.3)] flex flex-col items-center text-center h-full">
-                                <div class="w-28 h-28 mb-8 relative">
-                                    <div class="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse-slow"></div>
-                                    <img src="./icon-tally.png" alt="Tally" class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_15px_rgba(16,185,129,0.6)] group-hover:-translate-y-2 transition-transform duration-700">
-                                </div>
-                                <h4 class="text-xl font-serif text-white mb-4 group-hover:text-emerald-300 transition-colors">3. Tally<br>Verification</h4>
-                                <p class="text-sm text-paper-muted leading-relaxed group-hover:text-white/80 transition-colors font-light">In demo mode, nonces are revealed. Anyone can recompute SHA256(id|choice|nonce) and verify the count.</p>
-                            </div>
+                        <div class="text-center px-4">
+                            <div class="text-emerald-400 font-mono text-[10px] uppercase tracking-widest mb-2">3. Reveal</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">After close, nonces surface. Anyone can recompute SHA256(id|choice|nonce) and verify the tally.</p>
                         </div>
                     </div>
                 </div>

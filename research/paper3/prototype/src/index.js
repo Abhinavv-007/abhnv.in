@@ -27,12 +27,57 @@ async function ensureSchema(db) {
             ip_hash TEXT,
             created_at TEXT NOT NULL
         )`);
+        await db.exec(`CREATE TABLE IF NOT EXISTS rate_limits (
+            ip_hash TEXT NOT NULL,
+            action TEXT NOT NULL,
+            window_start INTEGER NOT NULL,
+            count INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (ip_hash, action, window_start)
+        )`);
         // These silently fail if the column already exists — that's intentional.
         try { await db.exec(`ALTER TABLE elections ADD COLUMN description TEXT`); } catch (_) {}
         try { await db.exec(`ALTER TABLE elections ADD COLUMN created_by_ip TEXT`); } catch (_) {}
         schemaReady = true;
     } catch (e) {
         console.error('Schema migration error:', e);
+    }
+}
+
+// ── RATE LIMITER ──────────────────────────────────────────────────────────────
+// Returns null if OK, or an error string if rate limit exceeded.
+async function checkRateLimit(db, ip, action, maxRequests, windowSeconds) {
+    if (!ip) return null; // No IP = can't rate-limit; let it through
+    try {
+        const ip_hash = await sha256(ip);
+        const now = Math.floor(Date.now() / 1000);
+        const window_start = now - (now % windowSeconds);
+
+        // Prune windows older than 2x the window size to keep table small
+        await db.prepare(
+            `DELETE FROM rate_limits WHERE ip_hash = ? AND action = ? AND window_start < ?`
+        ).bind(ip_hash, action, window_start - windowSeconds).run();
+
+        const row = await db.prepare(
+            `SELECT count FROM rate_limits WHERE ip_hash = ? AND action = ? AND window_start = ?`
+        ).bind(ip_hash, action, window_start).first();
+
+        if (row) {
+            if (row.count >= maxRequests) {
+                return `Rate limit exceeded. Max ${maxRequests} requests per ${windowSeconds}s.`;
+            }
+            await db.prepare(
+                `UPDATE rate_limits SET count = count + 1 WHERE ip_hash = ? AND action = ? AND window_start = ?`
+            ).bind(ip_hash, action, window_start).run();
+        } else {
+            await db.prepare(
+                `INSERT INTO rate_limits (ip_hash, action, window_start, count) VALUES (?, ?, ?, 1)`
+            ).bind(ip_hash, action, window_start).run();
+        }
+        return null;
+    } catch (e) {
+        // If rate-limit table fails for any reason, don't block the request
+        console.error('Rate limit check failed:', e);
+        return null;
     }
 }
 
@@ -115,6 +160,10 @@ app.post('/api/elections', async (c) => {
     try {
         const db = c.env.DB;
         await ensureSchema(db);
+
+        const rateLimitErr = await checkRateLimit(db, getClientIP(c), 'create_election', 3, 60);
+        if (rateLimitErr) return c.json({ ok: false, error: rateLimitErr }, 429);
+
         const body = await c.req.json();
         const { title, description, candidates: cands, mode } = body;
 
@@ -220,6 +269,9 @@ app.post('/api/cast', async (c) => {
 
         const db = c.env.DB;
         await ensureSchema(db);
+
+        const rateLimitErr = await checkRateLimit(db, getClientIP(c), 'cast_ballot', 10, 60);
+        if (rateLimitErr) return c.json({ ok: false, error: rateLimitErr }, 429);
 
         const election = await db.prepare(
             'SELECT status, chain_head, mode FROM elections WHERE id = ?'
@@ -640,7 +692,7 @@ app.get('/api/audit/proof', async (c) => {
 // ── SPA ROUTING ───────────────────────────────────────────────────────────────
 // Serve index.html for all /e/:id paths so the frontend can handle routing
 app.get('/e/:id', serveStatic({ path: 'index.html', manifest }));
-app.get('/e/:id/audit', serveStatic({ path: 'index.html', manifest }));
+app.get('/e/:id/audit', serveStatic({ path: 'audit.html', manifest }));
 app.get('/elections', serveStatic({ path: 'elections.html', manifest }));
 
 // Static file serving
