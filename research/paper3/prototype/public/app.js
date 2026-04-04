@@ -205,13 +205,10 @@ async function apiCall(endpoint, options = {}) {
         }
         throw new Error('Non-JSON response from server');
     } catch (e) {
-        // Fall through to mock only on network error or timeout
-        if (e.name === 'TimeoutError' || e.name === 'TypeError' || e.message.includes('fetch')) {
-            console.warn('Backend unavailable, using mock:', e.message);
-            const mockRes = await MockServer.handle(endpoint, method, options.body);
-            return { ok: mockRes.ok !== false, status: mockRes.ok ? 200 : 400, json: async () => mockRes };
-        }
-        throw e;
+        // Fall through to mock on any fetch/network/parse error
+        console.warn('Backend unavailable, using mock:', e.message);
+        const mockRes = await MockServer.handle(endpoint, method, options.body);
+        return { ok: mockRes.ok !== false, status: mockRes.ok ? 200 : 400, json: async () => mockRes };
     }
 }
 
@@ -1215,6 +1212,25 @@ function buildDemographics(tp, getCandName) {
 
 // ── HELPERS ────────────────────────────────────────────────────────────────────
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── CHAIN CARD 3D TILT EFFECT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.chain-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cx = rect.width / 2;
+            const cy = rect.height / 2;
+            const dx = (x - cx) / cx;
+            const dy = (y - cy) / cy;
+            card.style.transform = `translateY(-12px) rotateY(${dx * 8}deg) rotateX(${-dy * 6}deg)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+});
 
 // Expose showToast globally (used inline in HTML)
 window.showToast = showToast;

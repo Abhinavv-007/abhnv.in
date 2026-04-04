@@ -238,96 +238,159 @@
             100% { transform: scale(1); }
         }
 
-        /* ── Chain Block Infographic ── */
-        .chain-viz { align-items: center; }
-        .chain-block {
-            flex: 1; min-width: 130px; max-width: 200px;
-        }
-        .chain-block-inner {
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 16px;
-            padding: 20px 16px;
-            text-align: center;
-            background: rgba(10,10,10,0.7);
-            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
-            cursor: default;
-        }
-        .chain-block-inner:hover {
-            transform: translateY(-4px);
-        }
-        .genesis-block .chain-block-inner:hover { border-color: rgba(96,165,250,0.4); box-shadow: 0 0 30px rgba(96,165,250,0.15); }
-        .blue-block .chain-block-inner:hover { border-color: rgba(37,99,235,0.5); box-shadow: 0 0 30px rgba(37,99,235,0.2); }
-        .purple-block .chain-block-inner:hover { border-color: rgba(167,139,250,0.5); box-shadow: 0 0 30px rgba(167,139,250,0.2); }
-        .emerald-block .chain-block-inner:hover { border-color: rgba(52,211,153,0.5); box-shadow: 0 0 30px rgba(52,211,153,0.2); }
+        /* ── Chain Explorer (redesigned) ── */
+        .chain-explorer { overflow-x: auto; }
+        .chain-explorer::-webkit-scrollbar { height: 3px; }
+        .chain-explorer::-webkit-scrollbar-track { background: transparent; }
+        .chain-explorer::-webkit-scrollbar-thumb { background: rgba(37,99,235,0.3); border-radius: 2px; }
 
-        .chain-block-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #4b5563;
-            margin-bottom: 14px;
-        }
-        .chain-block-icon {
-            width: 40px; height: 40px;
-            margin: 0 auto 12px;
-        }
-        .chain-block-icon svg { width: 100%; height: 100%; }
-
-        .chain-block-title {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 500;
-            color: #E5E5E5;
-            margin-bottom: 6px;
-        }
-        .chain-block-hash {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 9px;
-            color: #4b5563;
-            line-height: 1.4;
-        }
-
-        .chain-arrow {
-            flex: 0 0 40px;
+        .chain-explorer-inner {
             display: flex;
-            align-items: center;
+            align-items: stretch;
+            gap: 0;
+            min-width: max-content;
+            padding: 8px 4px 16px;
             justify-content: center;
-            position: relative;
-            height: 2px;
-            margin: 0 4px;
-            min-width: 32px;
         }
-        .chain-arrow-line {
-            position: absolute;
-            top: 50%; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(to right, rgba(37,99,235,0.15), rgba(37,99,235,0.4), rgba(37,99,235,0.15));
+
+        .chain-card {
+            width: 196px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(160deg, #0a0a12 0%, #060608 100%);
+            cursor: default;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+                        box-shadow 0.5s ease,
+                        border-color 0.35s ease;
+            will-change: transform;
+        }
+        .chain-card[data-block="genesis"]:hover {
+            box-shadow: 0 28px 70px rgba(107,114,128,0.22), 0 0 0 1px rgba(107,114,128,0.25);
+            border-color: rgba(107,114,128,0.35);
+        }
+        .chain-card[data-block="ballot1"]:hover,
+        .chain-card[data-block="ballot2"]:hover {
+            box-shadow: 0 28px 70px rgba(37,99,235,0.28), 0 0 0 1px rgba(96,165,250,0.3), inset 0 1px 0 rgba(96,165,250,0.08);
+            border-color: rgba(96,165,250,0.35);
+        }
+        .chain-card[data-block="sealed"]:hover {
+            box-shadow: 0 28px 70px rgba(245,158,11,0.22), 0 0 0 1px rgba(251,191,36,0.28);
+            border-color: rgba(251,191,36,0.35);
+        }
+
+        .cc-accent { height: 3px; width: 100%; }
+        .cc-inner { padding: 18px; }
+        .cc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+        .cc-badge {
+            font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+            font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+            padding: 3px 7px; border-radius: 4px;
+        }
+        .cc-badge-gray { background: rgba(107,114,128,0.12); color: #9ca3af; border: 1px solid rgba(107,114,128,0.18); }
+        .cc-badge-blue { background: rgba(37,99,235,0.14); color: #60A5FA; border: 1px solid rgba(37,99,235,0.22); }
+        .cc-badge-amber { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.18); }
+
+        .cc-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.12); }
+        .cc-num-amber { color: rgba(251,191,36,0.35); }
+
+        .cc-rows { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; min-height: 80px; }
+
+        .cc-row {
+            display: flex; align-items: baseline; gap: 6px;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.4;
+        }
+        .cc-key { color: rgba(255,255,255,0.18); font-size: 9px; flex-shrink: 0; width: 38px; }
+        .cc-val { font-size: 9.5px; word-break: break-all; flex: 1; }
+        .cc-null { color: #374151; font-style: italic; }
+        .cc-genesis { color: #6b7280; }
+        .cc-dim { color: #374151; }
+        .cc-blue { color: #60A5FA; }
+        .cc-glow { color: #93c5fd; text-shadow: 0 0 10px rgba(96,165,250,0.45); }
+        .cc-white { color: #d1d5db; }
+        .cc-amber { color: #fbbf24; }
+        .cc-ellipsis { opacity: 0.4; }
+
+        .cc-foot { border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px; }
+        .cc-foot-text { font-size: 9.5px; color: rgba(255,255,255,0.2); line-height: 1.45; }
+
+        /* Connector between blocks */
+        .cc-connector {
+            width: 56px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; align-self: stretch;
+        }
+        .cc-connector-line {
+            position: absolute; top: 50%; left: 0; right: 14px; height: 1px;
+            background: linear-gradient(90deg, rgba(37,99,235,0.1) 0%, rgba(37,99,235,0.45) 100%);
             transform: translateY(-50%);
         }
-        @keyframes chain-pulse {
-            0% { left: 0; opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { left: calc(100% - 8px); opacity: 0; }
+        .cc-connector-head {
+            position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center;
         }
-        .chain-arrow-dot {
-            position: absolute;
-            top: 50%; transform: translateY(-50%);
-            width: 6px; height: 6px;
-            border-radius: 50%;
+        @keyframes cc-packet {
+            0% { left: 2px; opacity: 0; }
+            8% { opacity: 1; }
+            88% { opacity: 1; }
+            100% { left: calc(100% - 18px); opacity: 0; }
+        }
+        .cc-connector-packet {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 5px; height: 5px; border-radius: 50%;
             background: #60A5FA;
-            box-shadow: 0 0 8px #60A5FA;
-            animation: chain-pulse 2s linear infinite;
+            box-shadow: 0 0 6px #60A5FA, 0 0 14px rgba(96,165,250,0.7);
+            animation: cc-packet 2.2s linear infinite;
         }
 
-        @media (max-width: 768px) {
-            .chain-viz { flex-direction: column; align-items: stretch; gap: 8px; }
-            .chain-block { max-width: 100%; }
-            .chain-arrow { height: 32px; width: 2px; flex: 0 0 32px; margin: 0 auto; }
-            .chain-arrow-line { top: 0; bottom: 0; left: 50%; right: auto; width: 1px; height: 100%; transform: translateX(-50%); background: linear-gradient(to bottom, rgba(37,99,235,0.15), rgba(37,99,235,0.4), rgba(37,99,235,0.15)); }
-            .chain-arrow-dot { top: 0; left: 50%; transform: translateX(-50%); animation-name: chain-pulse-v; }
-            @keyframes chain-pulse-v { 0%{top:0;opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{top:calc(100% - 6px);opacity:0} }
+        /* Tamper warning */
+        .cc-tamper-strip {
+            margin: 20px auto 0;
+            max-width: 600px;
+            padding: 14px 20px;
+            background: rgba(239,68,68,0.04);
+            border: 1px solid rgba(239,68,68,0.1);
+            border-radius: 10px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .cc-tamper-icon { color: #ef4444; font-size: 13px; flex-shrink: 0; margin-top: 2px; font-style: normal; }
+        .cc-tamper-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.65; color: #6b7280; }
+        .cc-tamper-text strong { color: #f87171; font-weight: 600; }
+
+        /* ── Hero CTA buttons ── */
+        @property --cta-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+        @keyframes cta-spin { to { --cta-angle: 360deg; } }
+
+        .cta-primary {
+            position: relative; isolation: isolate;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.3s ease;
+        }
+        .cta-primary::before {
+            content: ''; position: absolute; inset: -1.5px; border-radius: inherit;
+            background: conic-gradient(from var(--cta-angle), transparent 0deg, #60A5FA 90deg, #a78bfa 180deg, transparent 270deg);
+            animation: cta-spin 2.5s linear infinite;
+            z-index: -1; opacity: 0; transition: opacity 0.25s ease;
+        }
+        .cta-primary:hover::before { opacity: 1; }
+        .cta-primary:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 18px 50px rgba(37,99,235,0.55); }
+        .cta-primary:active { transform: translateY(-1px) scale(1.01); }
+
+        .cta-secondary {
+            position: relative; transition: all 0.25s ease;
+        }
+        .cta-secondary:hover {
+            border-color: rgba(96,165,250,0.6) !important;
+            color: #93c5fd !important;
+            background: rgba(37,99,235,0.1) !important;
+            box-shadow: 0 0 0 1px rgba(37,99,235,0.3), 0 8px 30px rgba(37,99,235,0.2);
+            transform: translateY(-2px);
         }
 
         /* ── API Docs ── */
@@ -455,17 +518,14 @@
                 </div>
 
                 <div class="flex justify-center gap-4 flex-wrap">
-                    <a href="/elections#create" class="group relative px-8 py-4 bg-brand-blue text-white rounded-full font-bold tracking-wider shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:bg-brand-accent hover:scale-105 hover:shadow-[0_0_50px_rgba(37,99,235,0.6)] transition-all overflow-hidden text-sm">
-                        <span class="relative z-10 flex items-center gap-2">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Create an Election
-                        </span>
-                        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <a href="/elections#create" class="cta-primary flex items-center gap-2.5 px-8 py-4 bg-brand-blue text-white rounded-full font-bold tracking-wider shadow-[0_0_30px_rgba(37,99,235,0.35)] text-sm">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create an Election
                     </a>
-                    <a href="#demo" class="px-8 py-4 border border-white/10 bg-white/5 backdrop-blur text-paper-muted rounded-full font-bold tracking-wider hover:text-white hover:border-white/50 hover:bg-white/10 transition-all text-sm">
+                    <a href="#demo" class="cta-secondary px-8 py-4 border border-white/10 bg-white/5 backdrop-blur text-paper-muted rounded-full font-bold tracking-wider text-sm">
                         Try Demo
                     </a>
-                    <a href="#intro" class="px-8 py-4 border border-transparent text-paper-muted/60 rounded-full font-bold tracking-wider hover:text-paper-muted transition-all text-sm">
+                    <a href="#intro" class="px-8 py-4 border border-transparent text-paper-muted/50 rounded-full font-bold tracking-wider hover:text-paper-muted transition-colors text-sm">
                         Read the Paper
                     </a>
                 </div>
@@ -893,111 +953,127 @@
                     </div>
                 </div>
 
-                <!-- Chain Block Infographic -->
-                <div class="max-w-5xl mx-auto mt-16">
-                    <p class="text-center text-xs font-mono text-paper-muted/60 uppercase tracking-[0.25em] mb-8">How the chain is built</p>
+                <!-- Chain Explorer -->
+                <div class="max-w-full mx-auto mt-20">
 
-                    <!-- Chain visualization -->
-                    <div class="chain-viz flex flex-col md:flex-row items-stretch gap-0 overflow-x-auto pb-4">
-
-                        <!-- GENESIS block -->
-                        <div class="chain-block genesis-block flex-shrink-0">
-                            <div class="chain-block-inner">
-                                <div class="chain-block-label">ORIGIN</div>
-                                <div class="chain-block-icon">
-                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="20" cy="20" r="14" stroke="#60A5FA" stroke-width="1.5" stroke-dasharray="3 2"/>
-                                        <text x="20" y="25" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#60A5FA" font-weight="500">G</text>
-                                    </svg>
-                                </div>
-                                <div class="chain-block-title">GENESIS</div>
-                                <div class="chain-block-hash">prev: none</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow 1 -->
-                        <div class="chain-arrow">
-                            <div class="chain-arrow-line"></div>
-                            <div class="chain-arrow-dot"></div>
-                        </div>
-
-                        <!-- Block 001 — Commit step -->
-                        <div class="chain-block blue-block flex-shrink-0">
-                            <div class="chain-block-inner">
-                                <div class="chain-block-label">BALLOT #001</div>
-                                <div class="chain-block-icon commit-icon">
-                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <rect x="8" y="10" width="24" height="20" rx="3" stroke="#60A5FA" stroke-width="1.5"/>
-                                        <line x1="13" y1="17" x2="27" y2="17" stroke="#60A5FA" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-                                        <line x1="13" y1="21" x2="22" y2="21" stroke="#60A5FA" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-                                        <circle cx="28" cy="27" r="5" fill="#050505" stroke="#4ade80" stroke-width="1.5"/>
-                                        <path d="M25.5 27l1.5 1.5 3-3" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="chain-block-title">commit</div>
-                                <div class="chain-block-hash font-mono text-[9px]">SHA256(id|choice|nonce)</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow 2 -->
-                        <div class="chain-arrow">
-                            <div class="chain-arrow-line"></div>
-                            <div class="chain-arrow-dot" style="animation-delay:0.4s"></div>
-                        </div>
-
-                        <!-- Block 002 — Chain step -->
-                        <div class="chain-block purple-block flex-shrink-0">
-                            <div class="chain-block-inner">
-                                <div class="chain-block-label">BALLOT #002</div>
-                                <div class="chain-block-icon chain-icon">
-                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M14 20h12" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/>
-                                        <rect x="5" y="15" width="10" height="10" rx="2" stroke="#a78bfa" stroke-width="1.5"/>
-                                        <rect x="25" y="15" width="10" height="10" rx="2" stroke="#a78bfa" stroke-width="1.5"/>
-                                        <circle cx="10" cy="20" r="2" fill="#a78bfa" opacity="0.4"/>
-                                        <circle cx="30" cy="20" r="2" fill="#a78bfa" opacity="0.4"/>
-                                    </svg>
-                                </div>
-                                <div class="chain-block-title">chain_hash</div>
-                                <div class="chain-block-hash font-mono text-[9px]">SHA256(prev|id|i|commit|t)</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow 3 -->
-                        <div class="chain-arrow">
-                            <div class="chain-arrow-line"></div>
-                            <div class="chain-arrow-dot" style="animation-delay:0.8s"></div>
-                        </div>
-
-                        <!-- Block N — Snapshot seal -->
-                        <div class="chain-block emerald-block flex-shrink-0">
-                            <div class="chain-block-inner">
-                                <div class="chain-block-label">CLOSE</div>
-                                <div class="chain-block-icon">
-                                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M20 6l2.5 7.5H30l-6 4.5 2.5 7.5L20 21l-6.5 4.5 2.5-7.5L10 13.5h7.5z" stroke="#34d399" stroke-width="1.5" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="chain-block-title">snapshot</div>
-                                <div class="chain-block-hash font-mono text-[9px]">SHA256(head|count|closed_at)</div>
-                            </div>
-                        </div>
-
+                    <div class="flex items-center gap-6 mb-10 max-w-5xl mx-auto px-4">
+                        <div class="h-px flex-1" style="background: linear-gradient(90deg, transparent, rgba(37,99,235,0.25))"></div>
+                        <span class="font-mono text-[10px] text-paper-muted/40 uppercase tracking-[0.3em] whitespace-nowrap">Live Chain Structure</span>
+                        <div class="h-px flex-1" style="background: linear-gradient(270deg, transparent, rgba(37,99,235,0.25))"></div>
                     </div>
 
-                    <!-- Step labels below -->
-                    <div class="grid grid-cols-3 gap-4 mt-10 max-w-3xl mx-auto">
-                        <div class="text-center px-4">
-                            <div class="text-brand-glow font-mono text-[10px] uppercase tracking-widest mb-2">1. Commit</div>
-                            <p class="text-xs text-paper-muted leading-relaxed">Your choice is hashed with a secret nonce — published, but unreadable. Nobody can reverse it.</p>
+                    <div class="chain-explorer px-4">
+                        <div class="chain-explorer-inner">
+
+                            <!-- GENESIS -->
+                            <div class="chain-card" data-block="genesis">
+                                <div class="cc-accent" style="background: linear-gradient(90deg, #1f2937, #374151)"></div>
+                                <div class="cc-inner">
+                                    <div class="cc-top">
+                                        <div class="cc-badge cc-badge-gray">GENESIS</div>
+                                        <div class="cc-num">#000</div>
+                                    </div>
+                                    <div class="cc-rows">
+                                        <div class="cc-row"><span class="cc-key">prev</span><span class="cc-val cc-null">∅ null</span></div>
+                                        <div class="cc-row"><span class="cc-key">hash</span><span class="cc-val cc-genesis">"GENESIS"</span></div>
+                                        <div class="cc-row" style="min-height:22px"></div>
+                                    </div>
+                                    <div class="cc-foot"><span class="cc-foot-text">Chain origin. No prior block exists.</span></div>
+                                </div>
+                            </div>
+
+                            <div class="cc-connector">
+                                <div class="cc-connector-line"></div>
+                                <div class="cc-connector-packet" style="animation-delay:0s"></div>
+                                <div class="cc-connector-packet" style="animation-delay:1.1s"></div>
+                                <div class="cc-connector-head"><svg width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M1 1l8 6-8 6" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                            </div>
+
+                            <!-- BALLOT 1 -->
+                            <div class="chain-card" data-block="ballot1">
+                                <div class="cc-accent" style="background: linear-gradient(90deg, #1d4ed8, #3b82f6)"></div>
+                                <div class="cc-inner">
+                                    <div class="cc-top">
+                                        <div class="cc-badge cc-badge-blue">BALLOT</div>
+                                        <div class="cc-num">#001</div>
+                                    </div>
+                                    <div class="cc-rows">
+                                        <div class="cc-row"><span class="cc-key">prev</span><span class="cc-val cc-dim">"GENESIS"</span></div>
+                                        <div class="cc-row"><span class="cc-key">commit</span><span class="cc-val cc-blue">SHA256(id|★|nonce)</span></div>
+                                        <div class="cc-row"><span class="cc-key">chain</span><span class="cc-val cc-glow">a3f9b2c1<span class="cc-ellipsis">…</span></span></div>
+                                    </div>
+                                    <div class="cc-foot"><span class="cc-foot-text">★ = vote, sealed inside SHA256</span></div>
+                                </div>
+                            </div>
+
+                            <div class="cc-connector">
+                                <div class="cc-connector-line"></div>
+                                <div class="cc-connector-packet" style="animation-delay:0.4s"></div>
+                                <div class="cc-connector-packet" style="animation-delay:1.5s"></div>
+                                <div class="cc-connector-head"><svg width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M1 1l8 6-8 6" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                            </div>
+
+                            <!-- BALLOT 2 -->
+                            <div class="chain-card" data-block="ballot2">
+                                <div class="cc-accent" style="background: linear-gradient(90deg, #1d4ed8, #3b82f6)"></div>
+                                <div class="cc-inner">
+                                    <div class="cc-top">
+                                        <div class="cc-badge cc-badge-blue">BALLOT</div>
+                                        <div class="cc-num">#002</div>
+                                    </div>
+                                    <div class="cc-rows">
+                                        <div class="cc-row"><span class="cc-key">prev</span><span class="cc-val cc-dim">a3f9b2<span class="cc-ellipsis">…</span></span></div>
+                                        <div class="cc-row"><span class="cc-key">commit</span><span class="cc-val cc-blue">SHA256(id|★|nonce)</span></div>
+                                        <div class="cc-row"><span class="cc-key">chain</span><span class="cc-val cc-glow">b7c2d4e5<span class="cc-ellipsis">…</span></span></div>
+                                    </div>
+                                    <div class="cc-foot"><span class="cc-foot-text">prev = BLOCK #001 chain hash</span></div>
+                                </div>
+                            </div>
+
+                            <div class="cc-connector">
+                                <div class="cc-connector-line"></div>
+                                <div class="cc-connector-packet" style="animation-delay:0.8s"></div>
+                                <div class="cc-connector-packet" style="animation-delay:1.9s"></div>
+                                <div class="cc-connector-head"><svg width="10" height="14" viewBox="0 0 10 14" fill="none"><path d="M1 1l8 6-8 6" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                            </div>
+
+                            <!-- SEALED -->
+                            <div class="chain-card" data-block="sealed">
+                                <div class="cc-accent" style="background: linear-gradient(90deg, #78350f, #d97706)"></div>
+                                <div class="cc-inner">
+                                    <div class="cc-top">
+                                        <div class="cc-badge cc-badge-amber">SEALED</div>
+                                        <div class="cc-num cc-num-amber">CLOSE</div>
+                                    </div>
+                                    <div class="cc-rows">
+                                        <div class="cc-row"><span class="cc-key">head</span><span class="cc-val cc-dim">b7c2d4<span class="cc-ellipsis">…</span></span></div>
+                                        <div class="cc-row"><span class="cc-key">count</span><span class="cc-val cc-white">N ballots</span></div>
+                                        <div class="cc-row"><span class="cc-key">snap</span><span class="cc-val cc-amber">SHA256(head|N|t)</span></div>
+                                    </div>
+                                    <div class="cc-foot"><span class="cc-foot-text">Final seal. Tally is immutable.</span></div>
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="text-center px-4">
-                            <div class="text-purple-400 font-mono text-[10px] uppercase tracking-widest mb-2">2. Chain</div>
-                            <p class="text-xs text-paper-muted leading-relaxed">Every ballot links to the previous hash. Alter one block and every subsequent hash breaks.</p>
+                    </div>
+
+                    <div class="cc-tamper-strip mt-6">
+                        <em class="cc-tamper-icon">◈</em>
+                        <div class="cc-tamper-text">Alter <strong>any field</strong> in any block → its chain_hash changes → every block after it has a broken prev_hash → the entire chain is instantly invalidated. No partial tampering possible.</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-10 max-w-4xl mx-auto px-4">
+                        <div class="p-5 rounded-xl border border-white/5 bg-black/20">
+                            <div class="text-brand-glow font-mono text-[10px] uppercase tracking-widest mb-3">1 — Commit</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">Your choice is hashed with a secret nonce. Commits are public. Choices are private. Nobody can reverse SHA256.</p>
                         </div>
-                        <div class="text-center px-4">
-                            <div class="text-emerald-400 font-mono text-[10px] uppercase tracking-widest mb-2">3. Reveal</div>
-                            <p class="text-xs text-paper-muted leading-relaxed">After close, nonces surface. Anyone can recompute SHA256(id|choice|nonce) and verify the tally.</p>
+                        <div class="p-5 rounded-xl border border-white/5 bg-black/20">
+                            <div class="text-purple-400 font-mono text-[10px] uppercase tracking-widest mb-3">2 — Chain</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">Each ballot's chain_hash includes the previous one. Alter any ballot and every hash after it becomes invalid.</p>
+                        </div>
+                        <div class="p-5 rounded-xl border border-white/5 bg-black/20">
+                            <div class="text-emerald-400 font-mono text-[10px] uppercase tracking-widest mb-3">3 — Reveal</div>
+                            <p class="text-xs text-paper-muted leading-relaxed">After close, nonces are revealed. Anyone can recompute SHA256(id|choice|nonce) to verify the tally independently.</p>
                         </div>
                     </div>
                 </div>
