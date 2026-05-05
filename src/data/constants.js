@@ -9,7 +9,7 @@ export const NAV_LINKS = {
 
 export const SOCIALS = {
     github: "https://github.com/Abhinavv-007",
-    x: "https://x.com/Abhnv007",
+    x: "https://x.com/Abhnv8",
     linkedin: "https://linkedin.com/in/abhnv07",
     email: "mailto:hello@abhnv.in"
 };
