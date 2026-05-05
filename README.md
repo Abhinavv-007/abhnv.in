@@ -113,7 +113,7 @@ npm run dev
 ## 📡 FREQUENCIES
 
 - **GitHub**: [github.com/Abhinavv-007](https://github.com/Abhinavv-007)
-- **X (Twitter)**: [x.com/Abhnv007](https://x.com/Abhnv007)
+- **X (Twitter)**: [x.com/Abhnv8](https://x.com/Abhnv8)
 - **Direct Line**: `hello@abhnv.in`
 
 ---
